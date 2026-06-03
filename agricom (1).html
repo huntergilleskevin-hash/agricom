@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#00210A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Agricom"/>
+<meta name="description" content="Gestion et suivi d'exploitation et des travaux champêtres - Agricom"/>
+<title>Agricom 🌿</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F3F4F6;
+  --color-background-tertiary: #F9FAFB;
+  --color-border-tertiary: #E5E7EB;
+  --color-border-secondary: #D1D5DB;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 10px 30px -5px rgba(0, 33, 10, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --sidebar-width-expanded: 260px;
+  --sidebar-width-collapsed: 72px;
+
+  /* Charte Graphique Agricom */
+  --color-brand-primary: #00210A; /* Chrysocolla Blue */
+  --color-brand-accent: #A8FF00;  /* Neon Green */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #F9FAFB;
+    --color-text-secondary: #9CA3AF;
+    --color-background-primary: #111827;
+    --color-background-secondary: #1F2937;
+    --color-background-tertiary: #111827;
+    --color-border-tertiary: #374151;
+    --color-border-secondary: #4B5563;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-premium: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0; padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-background-secondary);
+  background-image: radial-gradient(var(--color-border-tertiary) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-container {
+  display: flex; min-height: 100vh; width: 100vw; overflow: hidden;
+}
+
+.main-content {
+  flex: 1; overflow-y: auto; padding: 1.5rem 2rem; transition: var(--transition-smooth);
+}
+
+@media (max-width: 768px) {
+  .app-container { flex-direction: column; }
+  .main-content { padding: 1rem; padding-bottom: 6.5rem; }
+}
+
+input, select, textarea, button {
+  font-family: var(--font-sans); font-size: 14px; color: var(--color-text-primary);
+}
+
+input, select, textarea {
+  background: var(--color-background-tertiary); border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md); padding: 10px 14px; outline: none; width: 100%; transition: var(--transition-smooth);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-brand-primary); box-shadow: 0 0 0 3px rgba(0, 33, 10, 0.15); background: var(--color-background-primary);
+}
+
+button { cursor: pointer; transition: var(--transition-smooth); }
+button:active { transform: scale(0.96); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.scroll-indicator-container { position: relative; }
+.scroll-indicator-container::after {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 24px;
+  background: linear-gradient(to left, rgba(0,0,0,0.06), transparent); pointer-events: none; opacity: 1; transition: opacity 0.3s;
+}
+
+/* SIDEBAR & NAV MOBILE */
+.sidebar {
+  background-color: var(--color-brand-primary); border-right: 1px solid var(--color-border-tertiary);
+  display: flex; flex-direction: column; height: 100vh; flex-shrink: 0; transition: var(--transition-smooth);
+  z-index: 200; overflow-x: hidden; position: relative;
+}
+
+.sidebar-expanded { width: var(--sidebar-width-expanded); }
+.sidebar-collapsed { width: var(--sidebar-width-collapsed); }
+
+.sidebar-header {
+  padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px; color: var(--color-brand-accent); font-weight: 800; font-size: 18px; white-space: nowrap;
+}
+
+.sidebar-menu-btn {
+  background: none; border: none; padding: 6px; border-radius: 8px; cursor: pointer;
+  color: #FFFFFF; display: flex; align-items: center; justify-content: center; opacity: 0.8;
+}
+.sidebar-menu-btn:hover { background-color: rgba(255, 255, 255, 0.1); opacity: 1; }
+
+.sidebar-content { flex: 1; padding: 12px; overflow-y: auto; }
+.sidebar-footer { padding: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background-color: rgba(0, 0, 0, 0.2); }
+.sidebar-profile { display: flex; align-items: center; gap: 12px; }
+
+.mobile-nav-bar {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 72px;
+  background-color: var(--color-brand-primary); border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000; padding: 4px 8px; overflow-x: auto; justify-content: flex-start;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.15); -webkit-overflow-scrolling: touch;
+}
+.mobile-nav-bar::-webkit-scrollbar { display: none; }
+
+.mobile-nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: none; border: none; color: #9CA3AF; font-size: 11px;
+  font-weight: 500; gap: 4px; flex: 0 0 auto; min-width: 65px; padding: 0 6px; cursor: pointer;
+}
+.mobile-nav-item-active { color: var(--color-brand-accent); font-weight: 700; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .mobile-nav-bar { display: flex; }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* Grid IA Responsive */
+.agro-ia-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .agro-ia-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.0/babel.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+// ----------------------------------------------------------------------
+// DATA & FIREBASE SETUP
+// ----------------------------------------------------------------------
+const firebaseConfig = { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+
+let app, auth, db;
+let hasFirebase = false;
+
+try {
+  if (typeof firebase !== 'undefined') {
+    app = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth(app);
+    db = firebase.firestore(app);
+    hasFirebase = true;
+  }
+} catch (e) {
+  console.warn("Mode local sécurisé activé :", e);
+}
+
+const appId = 'travaux-champetres-v2';
+
+const getCollectionRef = (collectionName) => {
+  if (!hasFirebase) return null;
+  return db.collection('artifacts').doc(appId).collection('public').doc('data').collection(collectionName);
+};
+
+const SHARED_PREFIX = '__shared__';
+const storage = {
+  get: async (key, shared=false) => {
+    try { const v = localStorage.getItem(shared ? SHARED_PREFIX + key : key); return v !== null ? { key, value: v, shared } : null; } catch(e) { return null; }
+  },
+  set: async (key, value, shared=false) => {
+    try { localStorage.setItem(shared ? SHARED_PREFIX + key : key, value); return { key, value, shared }; } catch(e) { return null; }
+  },
+  delete: async (key, shared=false) => {
+    try { localStorage.removeItem(shared ? SHARED_PREFIX + key : key); return { key, deleted: true, shared }; } catch(e) { return null; }
+  }
+};
+
+const CATEGORIES = [
+  { id: "labour", label: "Labour / Préparation", icon: "ti-backhoe", color: "#B7521A" },
+  { id: "semis", label: "Semis / Plantation", icon: "ti-plant", color: "#3B6D11" },
+  { id: "arrosage", label: "Arrosage / Irrigation", icon: "ti-droplet", color: "#185FA5" },
+  { id: "recolte", label: "Récolte", icon: "ti-basket", color: "#BA7517" },
+  { id: "traitement", label: "Traitement / Engrais", icon: "ti-flask", color: "#993356" },
+  { id: "entretien", label: "Entretien matériel", icon: "ti-tool", color: "#534AB7" },
+  { id: "autre", label: "Autre", icon: "ti-dots-circle-horizontal", color: "#5F5E5A" },
+];
+const STATUTS = [
+  { id: "planifie", label: "Planifié", color: "#185FA5", bg: "#E6F1FB" },
+  { id: "en_cours", label: "En cours", color: "#BA7517", bg: "#FAEEDA" },
+  { id: "termine", label: "Terminé", color: "#3B6D11", bg: "#EAF3DE" },
+  { id: "reporte", label: "Reporté", color: "#993356", bg: "#FBEAF0" },
+];
+const PRIORITIES = [
+  { id: "haute", label: "Haute", color: "#A32D2D" },
+  { id: "moyenne", label: "Moyenne", color: "#BA7517" },
+  { id: "basse", label: "Basse", color: "#3B6D11" },
+];
+const ETAT_OPTIONS = ["Excellent","Bon","Moyen","Mauvais","En traitement"];
+const ETAT_COLORS = { Excellent:"#1A6B35", Bon:"#3B6D11", Moyen:"#BA7517", Mauvais:"#A32D2D", "En traitement":"#185FA5" };
+const ETAT_BG = { Excellent:"#D4EDDA", Bon:"#EAF3DE", Moyen:"#FAEEDA", Mauvais:"#FCEBEB", "En traitement":"#E6F1FB" };
+
+const BIEN_COLONNES_DISPONIBLES = [
+  { id: "parcelle", label: "Parcelle / Zone", type: "text", width: 110 },
+  { id: "superficie", label: "Superficie (ha)", type: "number", width: 110, numeric: true, decimals: 2 },
+  { id: "nb_plants", label: "Nb plants / arbres / pieds", type: "number", width: 80, numeric: true },
+  { id: "date_plantation", label: "Date plantation", type: "date", width: 130 },
+  { id: "variete", label: "Variété", type: "text", width: 110 },
+  { id: "stade", label: "Stade de croissance", type: "select", width: 160, options: ["Pépinière", "Jeune plant", "Mature", "En production", "Vieillissant"] },
+  { id: "production", label: "Production estimée", type: "number", width: 120, numeric: true, decimals: 1 },
+  { id: "etat", label: "État sanitaire", type: "etat", width: 130 },
+  { id: "observations", label: "Observations / Notes", type: "text", width: 200 }
+];
+
+const DEFAULT_PLANTATION_CONFIGS = {
+  palmeraie: { label:"Palmeraie", icon:"ti-tree", color:"#1A6B35", emoji:"🌴", isDefault: true, columns: BIEN_COLONNES_DISPONIBLES.filter(c => c.id!=="stade").concat([{ id:"stade", label:"Stade", type:"select", width:160, options:["Pépinière","Jeune plant < 3 ans","Immature 3-5 ans","Mature > 5 ans","En production"] }]) },
+  cacaoyere: { label:"Cacaoyère", icon:"ti-plant-2", color:"#5A2F0A", emoji:"🍫", isDefault: true, columns: BIEN_COLONNES_DISPONIBLES.filter(c => c.id!=="stade").concat([{ id:"stade", label:"Stade", type:"select", width:150, options:["Pépinière","Jeune plant","En formation","En production","Vieillissant"] }]) },
+  orangiers: { label:"Orangiers", icon:"ti-circle", color:"#C45C00", emoji:"🍊", isDefault: true, columns: BIEN_COLONNES_DISPONIBLES.filter(c => c.id!=="nb_plants").concat([{ id:"nb_arbres", label:"Nb arbres", type:"number", width:80, numeric:true }]) },
+};
+
+const DEPENSE_COLOR = "#2C3E8C";
+const DEPENSE_COLS = [
+  { id:"date", label:"Date", type:"date", width:115 },
+  { id:"culture", label:"Culture liée", type:"select", width:130, options:["Palmeraie","Cacaoyère","Orangiers","Citronniers","Poivre","Général / Commun"] },
+  { id:"categorie", label:"Catégorie", type:"select", width:165, options:["Salaire ouvrier","Dette de travail","Achat traitement","Engrais / Fertilisant","Matériel agricole","Semences / Plants","Transport","Carburant","Location terrain","Autre"] },
+  { id:"description", label:"Description", type:"text", width:180 },
+  { id:"ouvrier_fournisseur", label:"Ouvrier / Fournisseur", type:"text", width:155 },
+  { id:"montant_du", label:"Montant dû (FCFA)", type:"number", width:135, numeric:true, decimals:0 },
+  { id:"montant_paye", label:"Montant payé (FCFA)", type:"number", width:135, numeric:true, decimals:0 },
+  { id:"solde", label:"Solde restant (FCFA)", type:"computed", width:135, numeric:true, compute: row => (parseFloat(row.cells.montant_du)||0) - (parseFloat(row.cells.montant_paye)||0) },
+  { id:"statut", label:"Statut paiement", type:"statut_depense", width:130 },
+  { id:"responsable", label:"Responsable", type:"text", width:120 },
+  { id:"date_echeance", label:"Échéance paiement", type:"date", width:135 },
+  { id:"observations", label:"Observations", type:"text", width:190 },
+];
+
+const MATERIEL_COLS = [
+  { id: "nom", label: "Nom de l'équipement", type: "text", width: 160 },
+  { id: "categorie", label: "Catégorie", type: "select", width: 140, options: ["Véhicule", "Outil manuel", "Irrigation", "Équipement lourd", "Électrique", "Autre"] },
+  { id: "quantite", label: "Quantité", type: "number", width: 90, numeric: true },
+  { id: "etat", label: "État général", type: "select", width: 130, options: ["Neuf", "Bon", "Moyen", "Défectueux", "En réparation"] },
+  { id: "date_acq", label: "Date acquisition", type: "date", width: 135 },
+  { id: "dernier_ent", label: "Dernier entretien", type: "date", width: 135 },
+  { id: "assigne", label: "Assigné à / Lieu", type: "text", width: 140 },
+  { id: "observations", label: "Observations", type: "text", width: 200 }
+];
+
+const OUVRIERS_COLS = [
+  { id: "date", label: "Date de présence", type: "date", width: 130 },
+  { id: "nom", label: "Nom de l'ouvrier", type: "text", width: 160 },
+  { id: "statut", label: "Statut", type: "select", width: 120, options: ["Présent", "Absent", "Congé", "Maladie", "Retard"] },
+  { id: "arrivee", label: "Heure d'arrivée", type: "text", width: 120 },
+  { id: "depart", label: "Heure de départ", type: "text", width: 120 },
+  { id: "tache", label: "Tâche assignée", type: "text", width: 180 },
+  { id: "avance", label: "Avance (FCFA)", type: "number", width: 130, numeric: true },
+  { id: "observations", label: "Observations", type: "text", width: 200 }
+];
+
+const STOCKS_COLS = [
+  { id: "nom", label: "Produit / Article", type: "text", width: 180 },
+  { id: "categorie", label: "Catégorie", type: "select", width: 150, options: ["Récolte brute", "Produit transformé", "Engrais/Intrant", "Semences", "Emballages", "Autre"] },
+  { id: "qte", label: "Quantité", type: "number", width: 110, numeric: true, decimals: 2 },
+  { id: "unite", label: "Unité", type: "select", width: 100, options: ["kg", "tonnes", "litres", "unités", "sacs"] },
+  { id: "seuil", label: "Seuil d'alerte", type: "number", width: 120, numeric: true },
+  { id: "valeur_u", label: "Valeur Unitaire", type: "number", width: 130, numeric: true },
+  { id: "valeur_t", label: "Valeur Totale", type: "computed", width: 130, numeric: true, compute: row => (parseFloat(row.cells.qte)||0) * (parseFloat(row.cells.valeur_u)||0) },
+  { id: "lieu", label: "Lieu de stockage", type: "text", width: 150 },
+  { id: "date_maj", label: "Dernière MAJ", type: "date", width: 130 }
+];
+
+function getTransformationCols(culturesMap) {
+  const cultureOptions = ["Général", ...Object.values(culturesMap).map(c => c.label)];
+  return [
+    { id: "date", label: "Date process", type: "date", width: 130 },
+    { id: "culture_source", label: "Culture Source", type: "select", width: 150, options: cultureOptions },
+    { id: "qte_entree", label: "Qté Entrante", type: "number", width: 110, numeric: true, decimals: 1 },
+    { id: "unite_entree", label: "Unité Entrante", type: "select", width: 120, options: ["kg", "tonnes", "sacs", "litres", "régimes", "cabosses"] },
+    { id: "processus", label: "Processus", type: "select", width: 150, options: ["Séchage", "Pressage / Moulin", "Fermentation", "Torréfaction", "Conditionnement", "Autre"] },
+    { id: "produit_final", label: "Produit Final", type: "text", width: 150 },
+    { id: "qte_sortie", label: "Qté Obtenue", type: "number", width: 110, numeric: true, decimals: 1 },
+    { id: "unite_sortie", label: "Unité Sortie", type: "select", width: 120, options: ["kg", "tonnes", "sacs", "litres", "bouteilles"] },
+    { id: "rendement", label: "Rendement (%)", type: "computed", width: 120, numeric: true, compute: row => {
+        const inQ = parseFloat(row.cells.qte_entree); const outQ = parseFloat(row.cells.qte_sortie);
+        if (inQ && outQ && inQ > 0) return ((outQ / inQ) * 100).toFixed(1) + " %"; return "";
+    }},
+    { id: "responsable", label: "Responsable", type: "text", width: 130 }
+  ];
+}
+
+function formatDate(s) { if (!s) return "—"; return new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); }
+function formatTime(s) { if (!s) return ""; return new Date(s).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); }
+function getDaysUntil(s) {
+  if (!s) return null;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  const t = new Date(); t.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.ceil((d - t) / 86400000);
+}
+function getLocalTodayString() {
+  const d = new Date();
+  const offset = d.getTimezoneOffset() * 60000;
+  return (new Date(Date.now() - offset)).toISOString().split('T')[0];
+}
+
+const callGemini = async (prompt, systemInstruction = "", responseSchema = null) => {
+  let customApiKey = "";
+  try { customApiKey = localStorage.getItem('tcp_gemini_api_key') || ""; } catch(e) {}
+  const apiKey = customApiKey || ""; 
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  if (systemInstruction) payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+  if (responseSchema) payload.generationConfig = { responseMimeType: "application/json", responseSchema: responseSchema };
+  let delay = 1000; let lastError = null;
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (response.ok) { const data = await response.json(); return data.candidates?.[0]?.content?.parts?.[0]?.text || ""; } else { lastError = await response.text(); }
+    } catch (e) { lastError = e.message; }
+    await new Promise(resolve => setTimeout(resolve, delay)); delay *= 2; 
+  }
+  console.warn("Passage en mode IA Hors-Ligne/Simulé. Raison :", lastError);
+  return simulateOfflineIA(prompt, responseSchema != null);
+};
+
+const simulateOfflineIA = (prompt, isJson) => {
+  if (isJson) {
+     let cat = "autre"; let lower = prompt.toLowerCase();
+     if (lower.includes("arros") || lower.includes("eau")) cat = "arrosage";
+     else if (lower.includes("recolt")) cat = "recolte";
+     else if (lower.includes("labour") || lower.includes("nettoy")) cat = "labour";
+     else if (lower.includes("sem") || lower.includes("plant")) cat = "semis";
+     else if (lower.includes("trait") || lower.includes("engrais")) cat = "traitement";
+     else if (lower.includes("repar") || lower.includes("outil")) cat = "entretien";
+     let prio = lower.includes("urgent") ? "haute" : "moyenne";
+     return JSON.stringify({ titre: prompt.substring(0, 45) + "...", categorie: cat, statut: "planifie", priorite: prio, description: "Généré via Mode Autonome Local" });
+  } else {
+     return "🤖 **Assistant Agro-IA (Mode Restreint)**\n\nL'analyse intelligente nécessite une Clé API Gemini configurée dans les paramètres. Vos données sont toutefois sécurisées localement.";
+  }
+};
+
+// ----------------------------------------------------------------------
+// COMPONENTS COMMUNS
+// ----------------------------------------------------------------------
+function EmptyFolderIllustration({ color = "#00210A" }) {
+  return (
+    <svg width="130" height="110" viewBox="0 0 130 110" fill="none" style={{ margin: "0 auto", opacity: 0.8 }}>
+      <path d="M15 25C15 21.6863 17.6863 19 21 19H48.4142C49.7391 19 51.01 19.5268 51.9472 20.4645L61.0528 29.5355C61.99 30.4732 63.2609 31 64.5858 31H109C112.314 31 115 33.6863 115 37V85C115 88.3137 112.314 91 109 91H21C17.6863 91 15 88.3137 15 85V25Z" fill={`${color}06`} stroke={color} strokeWidth="2" />
+      <circle cx="65" cy="62" r="15" fill={`${color}12`} />
+      <path d="M60 62H70M65 57V67" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Toast({ toasts }) {
+  return (
+    <div style={{ position:"fixed", top:20, right:20, zIndex:9999, display:"flex", flexDirection:"column", gap:10, maxWidth:360, width:"calc(100vw - 40px)" }}>
+      {toasts.map(t => (
+        <div key={t.id} style={{ background: t.type==="success"?"#EAF3DE":t.type==="warning"?"#FAEEDA":t.type==="info"?"#E6F1FB":"#FCEBEB", border:`1px solid ${t.type==="success"?"#00210A":t.type==="warning"?"#BA7517":t.type==="info"?"#185FA5":"#E24B4A"}`, borderRadius:12, padding:"12px 16px", fontSize:13.5, display:"flex", alignItems:"flex-start", gap:12, boxShadow:"var(--shadow-lg)", animation:"slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+          <i className={`ti ${t.type==="success"?"ti-circle-check":t.type==="warning"?"ti-alert-triangle":t.type==="info"?"ti-info-circle":"ti-x"}`} style={{ color:t.type==="success"?"#00210A":t.type==="warning"?"#BA7517":t.type==="info"?"#185FA5":"#A32D2D", fontSize:20, marginTop:1 }} aria-hidden="true"/>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight:600, color:"var(--color-text-primary)", marginBottom:2 }}>{t.title}</div>
+            <div style={{ color:"var(--color-text-secondary)", fontSize:12.5 }}>{t.message}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ConfirmModal({ show, title, message, onConfirm, onCancel, confirmBtnText = "Confirmer", confirmBtnColor = "#A32D2D" }) {
+  if (!show) return null;
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(3px)", zIndex:10100, display:"flex", alignItems:"center", justifyContent:"center", padding:16, animation:"fadeIn 0.2s" }}>
+      <div style={{ background:"var(--color-background-primary)", borderRadius:16, padding:24, maxWidth:400, width:"100%", boxShadow:"var(--shadow-lg)", border:"1px solid var(--color-border-tertiary)", animation:"scaleUp 0.2s" }}>
+        <h3 style={{ marginTop:0, color:confirmBtnColor, display:"flex", alignItems:"center", gap:8, fontSize: 16 }}>
+          <i className="ti ti-alert-triangle" /> {title}
+        </h3>
+        <p style={{ fontSize:14, color:"var(--color-text-secondary)", margin:"12px 0 24px", lineHeight: 1.5 }}>{message}</p>
+        <div style={{ display:"flex", justifyContent:"flex-end", gap:12 }}>
+          <button onClick={onCancel} style={{ padding:"8px 16px", borderRadius:10, border:"1px solid var(--color-border-secondary)", background:"transparent", fontWeight:600, cursor:"pointer" }}>Annuler</button>
+          <button onClick={onConfirm} style={{ padding:"8px 16px", borderRadius:10, border:"none", background:confirmBtnColor, color:"#fff", fontWeight:700, cursor:"pointer" }}>{confirmBtnText}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal({ show, onClose, onResetAll }) {
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [customApiKey, setCustomApiKey] = useState(() => { 
+    try { return localStorage.getItem('tcp_gemini_api_key') || ''; } catch(e) { return ''; } 
+  });
+  const [newKey, setNewKey] = useState(customApiKey);
+
+  const saveApiKey = (key) => { 
+    setNewKey(key); 
+    try { localStorage.setItem('tcp_gemini_api_key', key); } catch(e) {} 
+  };
+
+  if (!show) return null;
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(3px)", zIndex:10050, display:"flex", alignItems:"center", justifyContent:"center", padding:16, animation:"fadeIn 0.2s" }}>
+      <ConfirmModal show={showConfirmReset} title="⚠️ RÉINITIALISATION TOTALE" message="Êtes-vous sûr ? Cette action supprimera toutes vos données locales de l'exploitation Agricom." onConfirm={() => { onResetAll(); setShowConfirmReset(false); onClose(); }} onCancel={() => setShowConfirmReset(false)} confirmBtnText="Oui, tout effacer" confirmBtnColor="#A32D2D" />
+      <div style={{ background:"var(--color-background-primary)", borderRadius:18, padding:24, maxWidth:450, width:"100%", maxHeight: "90vh", overflowY: "auto", boxShadow:"var(--shadow-lg)", border:"1px solid var(--color-brand-primary)", animation:"scaleUp 0.2s" }}>
+        <div style={{ display:"flex", justifycontent:"space-between", alignItems:"center", marginBottom:20, borderBottom:"1px solid var(--color-border-tertiary)", paddingBottom:12 }}>
+          <h3 style={{ margin:0, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8, fontSize: 16 }}><i className="ti ti-settings" /> Paramètres</h3>
+          <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:24, color:"var(--color-text-secondary)", padding:0 }}>×</button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:16, marginBottom:24 }}>
+          <div>
+            <div style={{ fontWeight:700, fontSize:13, color:"var(--color-text-secondary)", textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Sauvegarde de Données</div>
+            <div style={{ background:"var(--color-background-secondary)", borderRadius:10, padding:"10px 12px", border:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", gap:10 }}>
+              <i className="ti ti-database" style={{ fontSize:18, color:"var(--color-brand-primary)" }} />
+              <div><div style={{ fontSize:13, fontWeight:600 }}>Mode Local Sécurisé</div><div style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Données conservées sur votre navigateur.</div></div>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontWeight:700, fontSize:13, color:"var(--color-text-secondary)", textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Intelligence Artificielle</div>
+            <div style={{ background:"#EEF1FB", borderRadius:10, padding:"14px", border:"1px solid rgba(0, 33, 10, 0.15)" }}>
+              <label style={{ fontSize:12.5, fontWeight:700, color:"var(--color-brand-primary)", display:"block", marginBottom:6 }}>Clé API Gemini (Optionnel)</label>
+              <input type="password" value={newKey} onChange={e => { saveApiKey(e.target.value); }} placeholder="Ex: AIzaSy..." style={{ width:"100%", padding:"10px 14px", borderRadius:8, border:"1px solid rgba(0, 33, 10, 0.25)", background:"#fff" }}/>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontWeight:700, fontSize:13, color:"var(--color-text-secondary)", textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Zone de Danger</div>
+            <div style={{ background:"#FCEBEB", borderRadius:10, padding:"14px", border:"1px solid #A32D2D33" }}>
+              <button onClick={() => setShowConfirmReset(true)} style={{ background:"#A32D2D", color:"#fff", border:"none", padding:"8px 14px", borderRadius:8, fontSize:12.5, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-refresh-alert" /> Réinitialiser l'application</button>
+            </div>
+          </div>
+        </div>
+        <div style={{ display:"flex", justifyContent:"flex-end" }}><button onClick={onClose} style={{ padding:"10px 18px", borderRadius:10, border:"none", background:"var(--color-border-secondary)", color:"var(--color-text-primary)", fontWeight:600, cursor:"pointer" }}>Fermer</button></div>
+      </div>
+    </div>
+  );
+}
+
+function GlobalReportModal({ show, onClose, summaryText }) {
+  if (!show) return null;
+  const copyToClipboard = () => {
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = summaryText; document.body.appendChild(textarea);
+      textarea.select(); document.execCommand("copy"); document.body.removeChild(textarea);
+      alert("Rapport copié !");
+    } catch (err) { alert("Erreur lors de la copie."); }
+  };
+  const shareWhatsApp = () => {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summaryText)}`, '_blank');
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(3px)", zIndex:10050, display:"flex", alignItems:"center", justifyContent:"center", padding:16, animation:"fadeIn 0.2s" }}>
+      <div style={{ background:"var(--color-background-primary)", borderRadius:18, padding:24, maxWidth:500, width:"100%", maxHeight: "90vh", overflowY: "auto", boxShadow:"var(--shadow-lg)", border:"1px solid var(--color-border-tertiary)", animation:"scaleUp 0.2s" }}>
+        <div style={{ display:"flex", justifycontent:"space-between", alignItems:"center", marginBottom:16, borderBottom:"1px solid var(--color-border-tertiary)", paddingBottom:12 }}>
+          <h3 style={{ margin:0, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8, fontSize: 16 }}><i className="ti ti-file-analytics" /> Rapport Global</h3>
+          <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:24, color:"var(--color-text-secondary)", padding:0 }}>×</button>
+        </div>
+        
+        <div style={{ background: "var(--color-background-secondary)", padding: "14px", borderRadius: "10px", fontSize: "12.5px", fontFamily: "monospace", whiteSpace: "pre-wrap", border: "1px solid var(--color-border-secondary)", marginBottom: "20px", maxHeight: "300px", overflowY: "auto", color:"var(--color-text-primary)" }}>
+          {summaryText}
+        </div>
+
+        <div style={{ display:"flex", gap: 10, justifyContent:"space-between" }}>
+          <button onClick={copyToClipboard} style={{ padding:"10px 14px", borderRadius:10, border:"1px solid var(--color-border-secondary)", background:"transparent", color:"var(--color-text-primary)", fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-copy"/> Copier</button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={shareWhatsApp} style={{ padding:"10px 18px", borderRadius:10, border:"none", background:"#25D366", color:"#fff", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-brand-whatsapp"/> Envoi WhatsApp Multiple</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExcelTable({ columns, rows, onRowsChange, color }) {
+  const [deleteId, setDeleteId] = useState(null);
+  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? "cards" : "table");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && viewMode === "table") setViewMode("cards");
+      else if (window.innerWidth >= 768 && viewMode === "cards") setViewMode("table");
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [viewMode]);
+
+  const addRow = () => {
+    const blank = Object.fromEntries(columns.map(c => [c.id, ""]));
+    const updated = [...rows, { id: Date.now() + Math.random(), cells: blank }];
+    onRowsChange(updated, true);
+  };
+  
+  const updateCell = (rowId, colId, val, isBlur = false) => {
+    const updated = rows.map(r => r.id === rowId ? { ...r, cells: { ...r.cells, [colId]: val } } : r);
+    onRowsChange(updated, false, colId, val, isBlur);
+  };
+  
+  const confirmDelete = (rowId) => {
+    onRowsChange(rows.filter(r => r.id !== rowId), false, "", "", true);
+    setDeleteId(null);
+  };
+
+  const numCols = columns.filter(c => c.numeric);
+  const totals = Object.fromEntries(numCols.map(col => {
+    const sum = rows.reduce((s, r) => {
+      let val = 0;
+      if (col.type === "computed") val = parseFloat(col.compute ? col.compute(r) : 0) || 0;
+      else val = parseFloat(r.cells[col.id]) || 0;
+      return s + val;
+    }, 0);
+    return [col.id, sum];
+  }));
+
+  const cellStyle = { border:`1px solid ${color}1a`, padding:0, position:"relative" };
+  const inputStyle = { width:"100%", border:"none", background:"transparent", padding:"10px 12px", fontSize:"13px", boxSizing:"border-box", outline:"none", transition:"background-color 0.15s" };
+
+  const renderCellInput = (row, col) => {
+    const val = row.cells[col.id] || "";
+    if (col.type === "etat") {
+      const c = ETAT_COLORS[val]; const b = ETAT_BG[val];
+      return (
+        <select value={val} onChange={e => updateCell(row.id, col.id, e.target.value, true)} style={{ ...inputStyle, color: c || "inherit", fontWeight: val ? 600 : 400, background: b || "transparent" }}>
+          <option value="">— Choisir —</option>
+          {ETAT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (col.type === "statut_depense") {
+      const SC = { Payé:"#1A6B35", Partiel:"#BA7517", "En attente":"#185FA5", Dette:"#A32D2D" };
+      const SB = { Payé:"#D4EDDA", Partiel:"#FAEEDA", "En attente":"#E6F1FB", Dette:"#FCEBEB" };
+      return (
+        <select value={val} onChange={e => updateCell(row.id, col.id, e.target.value, true)} style={{ ...inputStyle, color:SC[val]||"inherit", fontWeight:val?700:400, background:SB[val]||"transparent" }}>
+          <option value="">— Statut —</option>
+          {["Payé","Partiel","En attente","Dette"].map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (col.type === "computed") {
+      const computed = col.compute ? col.compute(row) : "";
+      const isNeg = typeof computed === "number" && computed < 0;
+      return <div style={{ padding:"10px 12px", fontSize:"13px", fontWeight:700, color:isNeg?"#A32D2D":color, textAlign:col.numeric?"right":"left" }}>{typeof computed === "number" ? computed.toLocaleString("fr-FR", {minimumFractionDigits: col.decimals||0, maximumFractionDigits: col.decimals||0}) : computed}</div>;
+    }
+    if (col.type === "select") return (
+      <select value={val} onChange={e => updateCell(row.id, col.id, e.target.value, true)} style={{ ...inputStyle, cursor:"pointer" }}>
+        <option value="">— Choisir —</option>
+        {col.options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    );
+    return (
+      <input type={col.type==="number"?"number":col.type==="date"?"date":"text"} value={val} onChange={e => updateCell(row.id, col.id, e.target.value, false)} onBlur={e => updateCell(row.id, col.id, e.target.value, true)} style={{ ...inputStyle, textAlign:col.numeric?"right":"left" }} placeholder={col.type==="date"?"jj/mm/aaaa":col.numeric?"0":""}/>
+    );
+  };
+
+  return (
+    <div style={{ borderRadius:18, overflow:"hidden", border:`1px solid ${color}33`, boxShadow:`0 10px 25px -5px ${color}10`, background:"var(--color-background-primary)" }}>
+      <div style={{ display:"flex", justifycontent:"space-between", alignItems:"center", padding:"12px 18px", background:color+"06", borderBottom:`1px solid ${color}15`, flexWrap:"wrap", gap:8 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:12, fontWeight:700, color, background:color+"15", padding:"3px 10px", borderRadius:20 }}>{rows.length} ligne(s)</span>
+          {viewMode === "table" && <span style={{ fontSize:11.5, color:"var(--color-text-secondary)", fontWeight:500 }}>↔ Glissez pour défiler</span>}
+        </div>
+        <div style={{ display:"flex", gap:4, background:"var(--color-background-secondary)", padding:2, borderRadius:8 }}>
+          <button onClick={() => setViewMode("table")} style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:600, background:viewMode==="table"?color:"transparent", color:viewMode==="table"?"#fff":"var(--color-text-secondary)" }}><i className="ti ti-table"/> Tableau</button>
+          <button onClick={() => setViewMode("cards")} style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11.5, fontWeight:600, background:viewMode==="cards"?color:"transparent", color:viewMode==="cards"?"#fff":"var(--color-text-secondary)" }}><i className="ti ti-cards"/> Fiches</button>
+        </div>
+      </div>
+
+      {viewMode === "table" ? (
+        <div className="scroll-indicator-container">
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ borderCollapse:"collapse", width:"100%", fontSize:13 }}>
+              <thead>
+                <tr>
+                  <th style={{ background:color, color:"#fff", padding:"12px 10px", fontSize:12, fontWeight:700, textAlign:"center", width:44, border:`1px solid ${color}33` }}>#</th>
+                  {columns.map(col => <th key={col.id} style={{ background:color, color:"#fff", padding:"12px 12px", fontSize:12, fontWeight:700, textAlign:"left", whiteSpace:"nowrap", border:`1px solid ${color}33`, minWidth:col.width||120 }}>{col.label}</th>)}
+                  <th style={{ background:color, color:"#fff", width:65, border:`1px solid ${color}33`, textAlign:"center" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 && <tr><td colSpan={columns.length + 2} style={{ textAlign:"center", padding:"4rem", color:"var(--color-text-secondary)", fontSize:14, background:"var(--color-background-primary)" }}><EmptyFolderIllustration color={color} /><br/>Aucune entrée trouvée.</td></tr>}
+                {rows.map((row, idx) => {
+                  const isCheckingDelete = deleteId === row.id;
+                  return (
+                    <tr key={row.id} style={{ background:idx%2===0 ? "var(--color-background-primary)" : "var(--color-background-tertiary)", transition:"var(--transition-smooth)" }}>
+                      <td style={{ textAlign:"center", color:color, fontSize:11, fontWeight:700, borderRight:`1px solid ${color}12`, padding:"8px 6px", background:color+"04" }}>{idx+1}</td>
+                      {columns.map(col => <td key={col.id} style={cellStyle}>{renderCellInput(row, col)}</td>)}
+                      <td style={{ textAlign:"center", borderLeft:`1px solid ${color}12`, padding:"4px" }}>
+                        {!isCheckingDelete ? (
+                          <button onClick={() => setDeleteId(row.id)} title="Supprimer" style={{ background:"none", border:"none", cursor:"pointer", color:"#A32D2D", fontSize:16, padding:"6px 8px", borderRadius:6, margin:"0 auto", opacity: 0.8 }}><i className="ti ti-trash"/></button>
+                        ) : (
+                          <div style={{ display:"flex", gap:3, justifycontent:"center", alignItems:"center" }}>
+                            <button onClick={() => confirmDelete(row.id)} style={{ background:"#A32D2D", border:"none", cursor:"pointer", color:"#fff", fontSize:11, padding:"5px 7px", borderRadius:6, fontWeight:700 }}><i className="ti ti-check"/></button>
+                            <button onClick={() => setDeleteId(null)} style={{ background:"var(--color-border-secondary)", border:"none", cursor:"pointer", color:"var(--color-text-primary)", fontSize:11, padding:"5px 7px", borderRadius:6, fontWeight:700 }}><i className="ti ti-arrow-back-up"/></button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              {rows.length > 0 && numCols.length > 0 && (
+                <tfoot>
+                  <tr style={{ background:color+"08" }}>
+                    <td style={{ padding:"12px 8px", fontSize:12, fontWeight:800, color:color, borderTop:`2px solid ${color}22`, textAlign:"center" }}>Σ</td>
+                    {columns.map(col => {
+                      const hasTotal = col.numeric && totals[col.id] !== undefined && col.type !== "computed";
+                      return <td key={col.id} style={{ padding:"12px 12px", fontSize:13, fontWeight:800, color:color, borderTop:`2px solid ${color}22`, textAlign:col.numeric?"right":"left" }}>{hasTotal ? (totals[col.id] === 0 ? "—" : totals[col.id].toLocaleString("fr-FR", {minimumFractionDigits: col.decimals||0, maximumFractionDigits: col.decimals||0})) : col.id===columns[0].id?"SOMMES :":""}</td>;
+                    })}
+                    <td style={{ borderTop:`2px solid ${color}22` }}></td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:16, padding:16, background:"var(--color-background-secondary)" }}>
+          {rows.length === 0 && <div style={{ textAlign:"center", padding:"4rem", color:"var(--color-text-secondary)", background:"var(--color-background-primary)", borderRadius:16, border:"1px solid var(--color-border-tertiary)" }}><EmptyFolderIllustration color={color} /><br/>Aucune entrée trouvée.</div>}
+          {rows.map((row, idx) => {
+            const isCheckingDelete = deleteId === row.id;
+            return (
+              <div key={row.id} style={{ background:"var(--color-background-primary)", border:`1.5px solid ${color}1e`, borderRadius:16, boxShadow:"var(--shadow-sm)", overflow:"hidden" }}>
+                <div style={{ background:color+"08", padding:"12px 16px", display:"flex", justifycontent:"space-between", alignItems:"center", borderBottom:`1.5px solid ${color}12` }}>
+                  <span style={{ fontWeight:700, fontSize:13, color }}>Fiche #{idx+1}</span>
+                  <div>
+                    {!isCheckingDelete ? (
+                      <button onClick={() => setDeleteId(row.id)} style={{ background:"rgba(163,45,45,0.08)", border:"none", cursor:"pointer", color:"#A32D2D", fontSize:13, padding:"6px 12px", borderRadius:8, display:"flex", alignItems:"center", gap:4, fontWeight:600 }}><i className="ti ti-trash"/> Supprimer</button>
+                    ) : (
+                      <div style={{ display:"flex", gap:6 }}>
+                        <button onClick={() => confirmDelete(row.id)} style={{ background:"#A32D2D", border:"none", color:"#fff", fontSize:11, padding:"5px 10px", borderRadius:6, fontWeight:700, cursor:"pointer" }}>Confirmer</button>
+                        <button onClick={() => setDeleteId(null)} style={{ background:"var(--color-border-secondary)", border:"none", color:"var(--color-text-primary)", fontSize:11, padding:"5px 10px", borderRadius:6, fontWeight:700, cursor:"pointer" }}>Annuler</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:14, padding:14 }}>
+                  {columns.map(col => (
+                    <div key={col.id} style={{ display:"flex", flexDirection:"column", gap:5 }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"var(--color-text-secondary)", textTransform:"uppercase", letterSpacing:0.5 }}>{col.label}</span>
+                      <div style={{ background:"var(--color-background-tertiary)", borderRadius:10, border:"1px solid var(--color-border-tertiary)", overflow:"hidden" }}>{renderCellInput(row, col)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div style={{ padding:"14px 18px", borderTop:`1px solid ${color}15`, background:color+"03", display:"flex", alignItems:"center", justifycontent:"space-between", flexWrap:"wrap", gap:10 }}>
+        <button onClick={addRow} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", borderRadius:10, border:`2px dashed ${color}aa`, background:"var(--color-background-primary)", color:color, cursor:"pointer", fontSize:13.5, fontWeight:600 }}><i className="ti ti-plus"/> Ajouter une ligne de saisie</button>
+        <span style={{ fontSize:12, color:"var(--color-text-secondary)", fontWeight:600 }}>{rows.length} lignes enregistrées</span>
+      </div>
+    </div>
+  );
+}
+
+function CustomChart({ type, data, options, height = 250 }) {
+  const canvasRef = useRef(null);
+  const chartInstance = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+    
+    if (window.Chart) {
+      chartInstance.current = new window.Chart(canvasRef.current, {
+        type,
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'system-ui', size: 11 } } }
+          },
+          ...options
+        }
+      });
+    }
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [type, data, options]);
+
+  return <div style={{ height, width: '100%', position: 'relative' }}><canvas ref={canvasRef}></canvas></div>;
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : ANALYSES & STATISTIQUES
+// ----------------------------------------------------------------------
+function AnalysesTab({ tasks, expenses, ouvriers, transformations, materiel, stocks }) {
+  const [timeframe, setTimeframe] = useState('semaine');
+
+  const getBuckets = (tf) => {
+    const buckets = []; const labels = []; const now = new Date();
+    if (tf === 'semaine') {
+      for(let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(now.getDate() - i);
+        d.setHours(0,0,0,0); const end = new Date(d); end.setHours(23,59,59,999);
+        labels.push(d.toLocaleDateString('fr-FR', {weekday:'short'})); buckets.push({ start: d, end });
+      }
+    } else if (tf === 'mois') {
+      for(let i=3; i>=0; i--) {
+        const end = new Date(); end.setDate(now.getDate() - (i*7)); end.setHours(23,59,59,999);
+        const start = new Date(end); start.setDate(end.getDate() - 6); start.setHours(0,0,0,0);
+        labels.push(`Sem. ${4-i}`); buckets.push({ start, end });
+      }
+    }
+    return { labels, buckets };
+  };
+
+  const { labels, buckets } = useMemo(() => getBuckets(timeframe), [timeframe]);
+  const inBucket = (dateStr, b) => { if (!dateStr) return false; const d = new Date(dateStr); return d >= b.start && d <= b.end; };
+
+  const expensesData = useMemo(() => buckets.map(b => expenses.filter(e => inBucket(e.cells.date, b)).reduce((sum, e) => sum + (parseFloat(e.cells.montant_du) || 0), 0)), [buckets, expenses]);
+  const tasksDoneData = useMemo(() => buckets.map(b => tasks.filter(t => t.statut === "termine" && inBucket(t.dateFin || t.createdAt, b)).length), [buckets, tasks]);
+  const tasksPlanData = useMemo(() => buckets.map(b => tasks.filter(t => t.statut !== "termine" && inBucket(t.dateDebut || t.createdAt, b)).length), [buckets, tasks]);
+
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"flex", gap:10, marginBottom:"1.5rem", background:"var(--color-background-primary)", padding:8, borderRadius:12, border:"1px solid var(--color-border-tertiary)", width:"fit-content", boxShadow:"var(--shadow-sm)" }}>
+        {[ { id: 'semaine', label: '7 Derniers Jours' }, { id: 'mois', label: '4 Dernières Semaines' } ].map(tf => (
+          <button key={tf.id} onClick={() => setTimeframe(tf.id)} style={{ padding:"8px 16px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13, background: timeframe === tf.id ? "var(--color-brand-primary)" : "transparent", color: timeframe === tf.id ? "#fff" : "var(--color-text-secondary)", transition:"all 0.2s" }}>
+            {tf.label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(400px, 1fr))", gap:20, marginBottom:"2rem" }}>
+        <div style={{ background:"var(--color-background-primary)", padding:20, borderRadius:16, border:"1px solid var(--color-border-tertiary)", boxShadow:"var(--shadow-sm)" }}>
+          <h3 style={{ margin:"0 0 16px 0", fontSize:14.5, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8 }}><i className="ti ti-chart-line"/> Évolution des Dépenses (FCFA)</h3>
+          <CustomChart type="line" data={{ labels, datasets: [{ label: "Dépenses engagées", data: expensesData, borderColor: "var(--color-brand-primary)", backgroundColor: "rgba(0, 33, 10, 0.1)", fill: true, tension: 0.3 }] }}/>
+        </div>
+        <div style={{ background:"var(--color-background-primary)", padding:20, borderRadius:16, border:"1px solid var(--color-border-tertiary)", boxShadow:"var(--shadow-sm)" }}>
+          <h3 style={{ margin:"0 0 16px 0", fontSize:14.5, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8 }}><i className="ti ti-chart-bar"/> Progression des Travaux</h3>
+          <CustomChart type="bar" data={{ labels, datasets: [ { label: "Travaux Terminés", data: tasksDoneData, backgroundColor: "#3B6D11", borderRadius: 4 }, { label: "Planifiés / En cours", data: tasksPlanData, backgroundColor: "var(--color-brand-primary)", borderRadius: 4 } ] }} options={{ scales: { x: { stacked: true }, y: { stacked: true } } }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : ASSISTANT AGRO-IA
+// ----------------------------------------------------------------------
+function AgroIATab({ tasks, expenses, ouvriers, transformations, materiel, stocks, archives, availableCultures, addToast }) {
+  const [threads, setThreads] = useState([]); const [activeThreadId, setActiveThreadId] = useState(""); const [showArchives, setShowArchives] = useState(false); const [inputText, setInputText] = useState(""); const [loading, setLoading] = useState(false); const chatBottomRef = useRef(null);
+
+  useEffect(() => { async function load() { const r = await storage.get("agro_ia_threads_v1"); if (r?.value) { const parsed = JSON.parse(r.value); setThreads(parsed); if (parsed.length > 0) setActiveThreadId((parsed.find(t => !t.archived) || parsed[0]).id); else initDefaultThread(); } else initDefaultThread(); } load(); }, []);
+  const initDefaultThread = () => { const defaultId = "thread_" + Date.now(); const newT = { id: defaultId, title: "Discussion Principale 🌿", archived: false, createdAt: new Date().toISOString(), messages: [{ id: 1, sender: "ia", text: "Bonjour ! Je suis votre ✨ Assistant Agronome IA Agricom. Je possède une visibilité totale sur l'exploitation, y compris vos dossiers d'archives historiques locales. Posez-moi vos questions !", time: new Date().toISOString() }] }; setThreads([newT]); setActiveThreadId(defaultId); saveThreadsToStorage([newT]); };
+  const saveThreadsToStorage = (updated) => storage.set("agro_ia_threads_v1", JSON.stringify(updated));
+
+  const handleCreateNewThread = () => { const newId = "thread_" + Date.now(); const newT = { id: newId, title: `Nouvelle discussion ${threads.length + 1} 🌾`, archived: false, createdAt: new Date().toISOString(), messages: [{ id: Date.now(), sender: "ia", text: "Nouvelle discussion démarrée.", time: new Date().toISOString() }] }; const updated = [newT, ...threads]; setThreads(updated); setActiveThreadId(newId); saveThreadsToStorage(updated); addToast("Nouveau", "Discussion initialisée.", "success"); };
+  const handleArchiveThread = (id) => { const updated = threads.map(t => t.id === id ? { ...t, archived: !t.archived } : t); setThreads(updated); saveThreadsToStorage(updated); const activeLeft = updated.find(t => !t.archived); if (activeLeft) setActiveThreadId(activeLeft.id); else initDefaultThread(); };
+  
+  const handleDeleteThread = (e, id) => {
+    e.stopPropagation();
+    const updated = threads.filter(t => t.id !== id);
+    if (updated.length === 0) {
+      initDefaultThread();
+    } else {
+      setThreads(updated);
+      saveThreadsToStorage(updated);
+      if (activeThreadId === id) setActiveThreadId(updated[0].id);
+    }
+    addToast("Supprimé", "Discussion IA effacée.", "error");
+  };
+  
+  const handleClearActiveThread = () => { const updated = threads.map(t => { if (t.id === activeThreadId) return { ...t, messages: [{ id: Date.now(), sender: "ia", text: "Discussion réinitialisée.", time: new Date().toISOString() }] }; return t; }); setThreads(updated); saveThreadsToStorage(updated); addToast("Nettoyé", "Historique vidé.", "success"); };
+
+  const buildExploitationContext = () => `
+Voici les données de l'exploitation Agricom actuelle :
+- Dépenses dues: ${expenses.reduce((s, r) => s + (parseFloat(r.cells.montant_du) || 0), 0).toLocaleString()} FCFA
+- Dépenses réglées: ${expenses.reduce((s, r) => s + (parseFloat(r.cells.montant_paye) || 0), 0).toLocaleString()} FCFA
+- Travaux (Planifiés:${tasks.filter(t=>t.statut==='planifie').length}, En cours:${tasks.filter(t=>t.statut==='en_cours').length}, Terminés:${tasks.filter(t=>t.statut==='termine').length})
+- Ouvriers enregistrés: ${ouvriers.length}
+- Matériel: ${materiel.length} équipements
+- Stocks sous le seuil d'alerte: ${stocks.filter(s => parseFloat(s.cells.qte) <= parseFloat(s.cells.seuil)).length}
+
+ARCHIVES HISTORIQUES DE L'EXPLOITATION (à utiliser pour les comparaisons sur plusieurs années) :
+${JSON.stringify(archives.map(a => ({ annee: a.annee, titre: a.titre, categorie: a.categorie, details: a.description, date: a.date })))}
+`;
+
+  const handleSendMessage = async (textToSend = null) => {
+    const text = textToSend || inputText; if (!text.trim()) return; if (!textToSend) setInputText("");
+    const userMsg = { id: Date.now(), sender: "user", text, time: new Date().toISOString() };
+    const updatedThreads = threads.map(t => { if (t.id === activeThreadId) { const msgs = [...t.messages, userMsg]; let title = t.title; if (t.title.startsWith("Nouvelle discussion")) title = text.substring(0, 25) + "..."; return { ...t, title, messages: msgs }; } return t; });
+    setThreads(updatedThreads); saveThreadsToStorage(updatedThreads); setLoading(true);
+    
+    const contextData = buildExploitationContext();
+    const systemPrompt = `Tu es un expert agronome africain Agricom. Analyse ces données réelles et l'historique archivé pour formuler des réponses ultra-ciblées, comparer les rendements passés, et assister l'utilisateur à long terme: ${contextData}`;
+
+    try {
+      const response = await callGemini(text, systemPrompt);
+      const iaMsg = { id: Date.now() + 1, sender: "ia", text: response, time: new Date().toISOString() };
+      const finalThreads = updatedThreads.map(t => { if (t.id === activeThreadId) return { ...t, messages: [...t.messages, iaMsg] }; return t; });
+      setThreads(finalThreads); saveThreadsToStorage(finalThreads);
+    } catch (e) {
+      addToast("Erreur Assistant", e.message, "error");
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { chatBottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [threads, loading]);
+
+  const currentThread = threads.find(t => t.id === activeThreadId) || { messages: [] };
+  const visibleThreads = threads.filter(t => !t.archived); const archivedThreads = threads.filter(t => t.archived);
+
+  return (
+    <div className="agro-ia-grid">
+      <div style={{ background:"var(--color-background-primary)", borderRadius:18, padding:18, border:"1px solid var(--color-border-tertiary)", display:"flex", flexDirection:"column", gap:12 }}>
+        <h3 style={{ margin:0, fontSize:14.5, fontWeight:700, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8 }}><i className="ti ti-wand" /> Boîte à Outils Agro-IA ✨</h3>
+        <button onClick={() => handleSendMessage("Fais-moi un plan d'action d'agronome...")} style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", background:"#EAF3DE", border:"1px solid #00210A33", borderRadius:12, color:"var(--color-brand-primary)", fontSize:12.5, fontWeight:600, textAlign:"left", cursor:"pointer" }}><i className="ti ti-seeding" style={{ fontSize:18 }} /> ✨ Recommandations</button>
+        <button onClick={() => handleSendMessage("Analyse financièrement mes dépenses actuelles...")} style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", background:"#EEF1FB", border:"1px solid #2C3E8C33", borderRadius:12, color:"#2C3E8C", fontSize:12.5, fontWeight:600, textAlign:"left", cursor:"pointer" }}><i className="ti ti-coin" style={{ fontSize:18 }} /> ✨ Audit Budgets</button>
+        <button onClick={() => handleSendMessage("Compare mes résultats actuels de production avec mes archives historiques des années précédentes.")} style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", background:"#FFFBEB", border:"1px solid #D9770633", borderRadius:12, color:"#D97706", fontSize:12.5, fontWeight:600, textAlign:"left", cursor:"pointer" }}><i className="ti ti-history" style={{ fontSize:18 }} /> ✨ Comparer avec Archives</button>
+        
+        <div style={{ borderTop:"1px solid var(--color-border-tertiary)", paddingTop:14, marginTop:8, display:"flex", flexDirection:"column", gap:8 }}>
+          <div style={{ display:"flex", alignItems:"center", justifycontent:"space-between", marginBottom:4 }}><span style={{ fontSize:11.5, fontWeight:700, textTransform:"uppercase", color:"var(--color-text-secondary)" }}>Mes Discussions</span><button onClick={handleCreateNewThread} style={{ background:"none", border:"none", color:"var(--color-brand-primary)", cursor:"pointer", padding:2 }}><i className="ti ti-plus" style={{ fontSize:16 }}/></button></div>
+          <div style={{ maxHeight:150, overflowY:"auto", display:"flex", flexDirection:"column", gap:4 }}>
+            {visibleThreads.map(t => (
+              <div key={t.id} style={{ display:"flex", alignItems:"center", gap:4, borderRadius:8, padding:"6px 10px", background:t.id===activeThreadId ? "rgba(0, 33, 10, 0.08)" : "transparent", cursor:"pointer" }} onClick={() => setActiveThreadId(t.id)}>
+                <i className="ti ti-message-2" style={{ color:t.id===activeThreadId?"var(--color-brand-primary)":"var(--color-text-secondary)" }}/>
+                <span style={{ flex:1, fontSize:12.5, fontWeight:t.id===activeThreadId?600:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", color:"var(--color-text-primary)" }}>{t.title}</span>
+                <button onClick={(e) => { e.stopPropagation(); handleArchiveThread(t.id); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--color-text-secondary)", padding:2 }} title="Archiver"><i className="ti ti-archive"/></button>
+                <button onClick={(e) => handleDeleteThread(e, t.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#A32D2D", padding:2 }} title="Supprimer"><i className="ti ti-trash"/></button>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setShowArchives(!showArchives)} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:"var(--color-text-secondary)", cursor:"pointer", fontSize:12, fontWeight:600, marginTop:4 }}><i className={`ti ${showArchives ? 'ti-chevron-down' : 'ti-chevron-right'}`}/><span>Discussions Archivées ({archivedThreads.length})</span></button>
+          {showArchives && (
+            <div style={{ display:"flex", flexDirection:"column", gap:4, paddingLeft:10 }}>
+              {archivedThreads.map(t => (
+                <div key={t.id} style={{ display:"flex", alignItems:"center", gap:4, borderRadius:8, padding:"4px 8px", background:"rgba(0,0,0,0.02)" }}>
+                  <i className="ti ti-archive" style={{ fontSize:12, color:"var(--color-text-secondary)" }}/><span style={{ flex:1, fontSize:11.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.title}</span>
+                  <button onClick={(e) => { e.stopPropagation(); handleArchiveThread(t.id); }} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--color-brand-primary)", padding:2 }} title="Désarchiver"><i className="ti ti-arrow-back-up"/></button>
+                  <button onClick={(e) => handleDeleteThread(e, t.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#A32D2D", padding:2 }} title="Supprimer"><i className="ti ti-trash"/></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{ background:"var(--color-background-primary)", borderRadius:18, border:"1px solid var(--color-border-tertiary)", display:"flex", flexDirection:"column", height:"500px", overflow:"hidden", flex: 1 }}>
+        <div style={{ background:"var(--color-background-secondary)", padding:"14px 18px", borderBottom:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", justifycontent:"space-between" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ width:32, height:32, borderRadius:8, background:"linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-primary))", display:"flex", alignItems:"center", justifycontent:"center", color:"#fff" }}><i className="ti ti-sparkles" style={{ fontSize:16 }} /></div>
+            <div><div style={{ fontWeight:700, fontSize:13.5 }}>{currentThread.title || "Dialogue IA"}</div><div style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Assistant agronomique</div></div>
+          </div>
+          <button onClick={handleClearActiveThread} style={{ display:"flex", alignItems:"center", gap:4, padding:"6px 12px", border:"1px solid var(--color-border-secondary)", background:"var(--color-background-primary)", borderRadius:8, fontSize:11.5, color:"#A32D2D", cursor:"pointer", fontWeight:600 }}><i className="ti ti-trash"/> Vider</button>
+        </div>
+        <div style={{ flex:1, padding:16, overflowY:"auto", display:"flex", flexDirection:"column", gap:12 }}>
+          {currentThread.messages && currentThread.messages.map(m => {
+            const isIA = m.sender === "ia";
+            return (
+              <div key={m.id} style={{ display:"flex", flexDirection:"column", alignItems:isIA?"flex-start":"flex-end" }}>
+                <div style={{ fontSize:10.5, color:"var(--color-text-secondary)", marginBottom:3 }}>{isIA ? "✨ IA Agricom" : "Moi"}</div>
+                <div style={{ maxWidth:"85%", background:isIA?"var(--color-background-tertiary)":"linear-gradient(135deg, var(--color-brand-primary), #003310)", color:isIA?"var(--color-text-primary)":"#fff", padding:"11px 15px", borderRadius:isIA?"16px 16px 16px 4px":"16px 16px 4px 16px", border:isIA?"1px solid var(--color-border-tertiary)":"none", fontSize:13.5, lineHeight:1.5, whiteSpace:"pre-wrap" }}>{m.text}</div>
+              </div>
+            );
+          })}
+          {loading && <div style={{ display:"flex", alignItems:"center", gap:8, color:"var(--color-text-secondary)", fontSize:12.5, padding:"8px 12px" }}><i className="ti ti-loader" style={{ animation:"spin 1s linear infinite" }} /> L'IA réfléchit...</div>}
+          <div ref={chatBottomRef} />
+        </div>
+        <div style={{ padding:"12px 16px", borderTop:"1px solid var(--color-border-tertiary)", background:"var(--color-background-tertiary)", display:"flex", gap:10 }}>
+          <input value={inputText} onChange={e => setInputText(e.target.value)} onKeyDown={e => e.key==="Enter" && handleSendMessage()} placeholder="Posez une question sur vos archives ou votre exploitation..." style={{ flex:1, borderRadius:24, padding:"10px 16px" }} />
+          <button onClick={() => handleSendMessage()} style={{ width:40, height:40, borderRadius:"50%", background:"var(--color-brand-primary)", color:"#fff", border:"none", display:"flex", alignItems:"center", justifycontent:"center", cursor:"pointer" }}><i className="ti ti-arrow-right" style={{ fontSize:18 }} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : ARCHIVES HISTORIQUES
+// ----------------------------------------------------------------------
+function ArchivesTab({ archives, onArchivesChange, addToast }) {
+  const [search, setSearch] = useState("");
+  const [filterCat, setFilterCat] = useState("all");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newArchive, setNewArchive] = useState({ titre: "", annee: new Date().getFullYear(), categorie: "rendement", description: "", date: getLocalTodayString() });
+
+  const handleAddArchive = () => {
+    if (!newArchive.titre.trim() || !newArchive.description.trim()) {
+      return addToast("Champs manquants", "Veuillez remplir le titre et la description.", "warning");
+    }
+    const item = { id: Date.now(), ...newArchive };
+    const updated = [item, ...archives];
+    onArchivesChange(updated);
+    setNewArchive({ titre: "", annee: new Date().getFullYear(), categorie: "rendement", description: "", date: getLocalTodayString() });
+    setShowAddForm(false);
+    addToast("Archivé", "Informations historiques enregistrées dans le coffre.", "success");
+  };
+
+  const handleDelete = (id) => {
+    const updated = archives.filter(a => a.id !== id);
+    onArchivesChange(updated);
+    addToast("Supprimé", "Archive supprimée définitivement.", "error");
+  };
+
+  const filtered = archives.filter(a => {
+    const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase()) || a.description.toLowerCase().includes(search.toLowerCase());
+    const matchCat = filterCat === "all" || a.categorie === filterCat;
+    return matchSearch && matchCat;
+  });
+
+  return (
+    <div style={{ animation: "fadeIn 0.35s" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--color-brand-primary)" }}>Archives d'Exploitation Agricom</h2>
+          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--color-text-secondary)" }}>Stocker et classifier vos données historiques sur plusieurs années de récolte.</p>
+        </div>
+        <button onClick={() => setShowAddForm(!showAddForm)} style={{ background: "var(--color-brand-primary)", color: "#fff", border: "none", padding: "10px 16px", borderRadius: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+          <i className="ti ti-plus" /> Archiver un événement
+        </button>
+      </div>
+
+      {showAddForm && (
+        <div style={{ background: "var(--color-background-primary)", borderRadius: 16, border: "1.5px solid var(--color-brand-primary)", padding: 20, marginBottom: 20, animation: "scaleUp 0.2s" }}>
+          <h3 style={{ margin: "0 0 16px", fontSize: 14.5, fontWeight: 700, color: "var(--color-brand-primary)" }}>Nouveau Dossier Historique</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 14 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Titre de l'événement / Fiche</label>
+              <input value={newArchive.titre} onChange={e => setNewArchive({ ...newArchive, titre: e.target.value })} placeholder="Ex: Récolte Palmeraie Exceptionnelle 2024" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Année</label>
+              <input type="number" value={newArchive.annee} onChange={e => setNewArchive({ ...newArchive, annee: parseInt(e.target.value) || new Date().getFullYear() })} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Catégorie d'archive</label>
+              <select value={newArchive.categorie} onChange={e => setNewArchive({ ...newArchive, categorie: e.target.value })}>
+                <option value="rendement">Rendement de récolte</option>
+                <option value="finance">Bilan Financier annuel</option>
+                <option value="climat">Météo / Facteurs climatiques</option>
+                <option value="sinistre">Maladie / Sinistre historique</option>
+                <option value="autre">Autre note générale</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Date d'enregistrement</label>
+              <input type="date" value={newArchive.date} onChange={e => setNewArchive({ ...newArchive, date: e.target.value })} />
+            </div>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 6 }}>Description détaillée & chiffres (Sera accessible par l'Agro-IA)</label>
+            <textarea value={newArchive.description} onChange={e => setNewArchive({ ...newArchive, description: e.target.value })} rows={4} placeholder="Ex: Palmeraie Bloc A et B. Volume total récolté : 42 tonnes. Engrais utilisé : NPK 15-15-15. Températures très sèches en février..." />
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <button onClick={() => setShowAddForm(false)} style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer" }}>Annuler</button>
+            <button onClick={handleAddArchive} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "var(--color-brand-primary)", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Valider et Classer</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 Rechercher dans les archives d'exploitation (titre, mots-clés...)" style={{ flex: 1, minWidth: 260 }} />
+        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ width: 220 }}>
+          <option value="all">Toutes les catégories d'archives</option>
+          <option value="rendement">Rendements de récoltes</option>
+          <option value="finance">Bilans financiers annuels</option>
+          <option value="climat">Météo & Facteurs climatiques</option>
+          <option value="sinistre">Maladies & Sinistres historiques</option>
+          <option value="autre">Autres notes</option>
+        </select>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "4rem", background: "var(--color-background-primary)", borderRadius: 16, border: "1px solid var(--color-border-tertiary)" }}>
+            <EmptyFolderIllustration color="var(--color-brand-primary)" />
+            <div style={{ marginTop: 12, fontSize: 14, color: "var(--color-text-secondary)" }}>Aucun dossier d'archive correspondant à votre recherche.</div>
+          </div>
+        ) : (
+          filtered.map(item => {
+            const iconsMap = { rendement: "ti-basket", finance: "ti-report-money", climat: "ti-cloud-sun", sinistre: "ti-alert-triangle", autre: "ti-notebook" };
+            const badgeColorMap = { rendement: "#3B6D11", finance: "#185FA5", climat: "#BA7517", sinistre: "#993356", autre: "#5F5E5A" };
+            return (
+              <div key={item.id} style={{ background: "var(--color-background-primary)", border: "1.5px solid var(--color-border-tertiary)", borderRadius: 16, padding: 18, boxShadow: "var(--shadow-sm)", transition: "all 0.2s" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: (badgeColorMap[item.categorie] || "#5F5E5A") + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <i className={`ti ${iconsMap[item.categorie] || "ti-notebook"}`} style={{ color: badgeColorMap[item.categorie], fontSize: 18 }} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>{item.titre}</h4>
+                      <span style={{ fontSize: 11.5, color: "var(--color-text-secondary)", fontWeight: 600 }}>Enregistré le {formatDate(item.date)}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 11, background: "var(--color-brand-primary)", color: "var(--color-brand-accent)", fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>Année : {item.annee}</span>
+                    <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#A32D2D", fontSize: 16, padding: 4 }} title="Supprimer définitivement"><i className="ti ti-trash" /></button>
+                  </div>
+                </div>
+                <div style={{ fontSize: 13.5, color: "var(--color-text-secondary)", lineHeight: 1.5, background: "var(--color-background-tertiary)", padding: "12px 14px", borderRadius: 12, whiteSpace: "pre-wrap", border: "1px solid var(--color-border-tertiary)" }}>
+                  {item.description}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : PLANTATIONS
+// ----------------------------------------------------------------------
+function PlantationTab({ addToast, dbUser, admins, availableCultures, allPlantationData, onPlantationRowsChange, loadCulturesAndData }) {
+  const [activePlant, setActivePlant] = useState("");
+  const [showConfigPanel, setShowConfigPanel] = useState(false);
+  const [cultureToDelete, setCultureToDelete] = useState(null);
+  const [newCulture, setNewCulture] = useState({ id: "", label: "", emoji: "🌱", color: "#1D9E75", selectedCols: ["parcelle", "superficie", "nb_plants", "etat", "observations"] });
+
+  useEffect(() => { if (availableCultures && Object.keys(availableCultures).length > 0) { const keys = Object.keys(availableCultures); if (!activePlant || !keys.includes(activePlant)) setActivePlant(keys[0]); } }, [availableCultures, activePlant]);
+
+  const handleCreateCulture = async () => {
+    if (!newCulture.label.trim()) return addToast("Nom requis", "Saisissez un nom.", "error");
+    const key = newCulture.label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_");
+    if (availableCultures[key]) return addToast("Erreur doublon", "Culture existante.", "error");
+    const columns = BIEN_COLONNES_DISPONIBLES.filter(col => newCulture.selectedCols.includes(col.id));
+    const configData = { label: newCulture.label, emoji: newCulture.emoji, color: newCulture.color, isDefault: false, columns };
+    const updatedConfigs = { ...availableCultures, [key]: configData };
+    const customOnly = {}; Object.entries(updatedConfigs).forEach(([k, v]) => { if (!v.isDefault) customOnly[k] = v; });
+    await storage.set("custom_plantation_configs", JSON.stringify(customOnly));
+    await storage.set(`plantation_${key}`, JSON.stringify([]));
+    await loadCulturesAndData(); window.dispatchEvent(new Event("culturesUpdated"));
+    setActivePlant(key); setShowConfigPanel(false); addToast("Succès", `Culture ${configData.label} créée !`, "success");
+  };
+
+  const confirmDeleteCulture = async () => {
+    if (!cultureToDelete) return;
+    const key = cultureToDelete; const updatedConfigs = { ...availableCultures }; delete updatedConfigs[key];
+    const customOnly = {}; Object.entries(updatedConfigs).forEach(([k, v]) => { if (!v.isDefault) customOnly[k] = v; });
+    await storage.set("custom_plantation_configs", JSON.stringify(customOnly));
+    await storage.delete(`plantation_${key}`);
+    await loadCulturesAndData(); window.dispatchEvent(new Event("culturesUpdated"));
+    setActivePlant(Object.keys(updatedConfigs)[0] || "");
+    setCultureToDelete(null); addToast("Supprimé", "Culture retirée.", "error");
+  };
+
+  const config = availableCultures[activePlant] || { label: "", color: "var(--color-brand-primary)", emoji: "🌴", columns: [] };
+  const rows = allPlantationData[activePlant] || [];
+  const totalStats = Object.entries(availableCultures).map(([key, cfg]) => {
+    const r = allPlantationData[key] || [];
+    const numCol = cfg.columns.find(c => c.id === "nb_plants" || c.id === "nb_arbres" || c.id === "nb_pieds");
+    const total = numCol ? r.reduce((s, row) => s + (parseFloat(row.cells[numCol.id]) || 0), 0) : 0;
+    return { key, cfg, count: r.length, total };
+  });
+
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <ConfirmModal show={!!cultureToDelete} title="Supprimer la culture" message="Confirmer la suppression ?" onConfirm={confirmDeleteCulture} onCancel={() => setCultureToDelete(null)} />
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <button onClick={() => setShowConfigPanel(!showConfigPanel)} style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", borderRadius:10, border:"none", background:"var(--color-brand-primary)", color:"#fff", cursor:"pointer", fontSize:12.5, fontWeight:600 }}><i className="ti ti-settings"/> Gérer les cultures</button>
+      </div>
+
+      {showConfigPanel && (
+        <div style={{ background: "var(--color-background-primary)", borderRadius: 18, border: "1.5px solid var(--color-border-secondary)", padding: 20, marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}><h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: "var(--color-brand-primary)" }}>Ajouter une culture</h3><button onClick={() => setShowConfigPanel(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18 }}>×</button></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap:14, marginBottom: 16 }}>
+            <div><label style={{ fontSize:11.5, fontWeight:700, display:"block", marginBottom:6 }}>Nom *</label><input value={newCulture.label} onChange={e => setNewCulture({...newCulture, label: e.target.value})} style={{width: "100%"}}/></div>
+            <div><label style={{ fontSize:11.5, fontWeight:700, display:"block", marginBottom:6 }}>Émoji</label><select value={newCulture.emoji} onChange={e => setNewCulture({...newCulture, emoji: e.target.value})} style={{width: "100%"}}>{["🌱","🌾","🥑","☕","🍌","🍍","🍅","🌽","🥔","🥦"].map(em => <option key={em} value={em}>{em}</option>)}</select></div>
+            <div><label style={{ fontSize:11.5, fontWeight:700, display:"block", marginBottom:6 }}>Couleur</label><select value={newCulture.color} onChange={e => setNewCulture({...newCulture, color: e.target.value})} style={{width: "100%"}}>{["#00210A","#2C3E8C","#5A2F0A","#C45C00","#8A7A00","#6B1A3A","#BA7517","#534AB7"].map(c => <option key={c} value={c} style={{ background:c, color:"#fff" }}>{c}</option>)}</select></div>
+          </div>
+          <button onClick={handleCreateCulture} style={{ padding: "12px 18px", border: "none", background: "var(--color-brand-primary)", color: "#fff", borderRadius: 10, fontWeight: 700, width: "100%", cursor: "pointer" }}>Valider et initialiser</button>
+        </div>
+      )}
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))", gap:12, marginBottom:"1.5rem" }}>
+        {totalStats.map(({ key, cfg, count, total }) => (
+          <div key={key} onClick={() => setActivePlant(key)} style={{ background:activePlant===key ? `linear-gradient(135deg, ${cfg.color}, #00210A)` : "var(--color-background-primary)", borderRadius:16, padding:"14px 16px", cursor:"pointer", border:`1.5px solid ${activePlant===key ? "var(--color-brand-accent)" : "var(--color-border-tertiary)"}`, transition:"0.2s" }}>
+            <div style={{ fontSize:22, marginBottom:4, display: "flex", justifycontent: "space-between", alignItems: "center" }}>
+              <span>{cfg.emoji}</span>
+              {!cfg.isDefault && <button onClick={(e) => { e.stopPropagation(); setCultureToDelete(key); }} style={{ background:"none", border:"none", color: activePlant===key ? "#fff" : "#A32D2D", cursor:"pointer", padding:2 }}><i className="ti ti-trash"/></button>}
+            </div>
+            <div style={{ fontSize:12, fontWeight:700, color:activePlant===key?"#fff":cfg.color, marginBottom:4 }}>{cfg.label}</div>
+            <div style={{ fontSize:22, fontWeight:800, color:activePlant===key?"#fff":cfg.color }}>{count}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"flex", alignItems:"center", justifycontent:"space-between", marginBottom:"1rem", flexWrap:"wrap", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:26 }}>{config.emoji}</span>
+          <div><h2 style={{ margin:0, fontSize:16, fontWeight:700, color:config.color }}>Suivi {config.label}</h2><div style={{ fontSize:12, color:"var(--color-text-secondary)" }}>{rows.length} enregistrements</div></div>
+        </div>
+      </div>
+      <ExcelTable columns={config.columns} rows={rows} onRowsChange={(r, isA, c, v, b) => onPlantationRowsChange(activePlant, r, isA, c, v, b)} color={config.color}/>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : DÉPENSES
+// ----------------------------------------------------------------------
+function DepensesTab({ addToast, tasks, dbUser, expenses, onExpensesChange, admins, setAdmins }) {
+  const [newAdmin, setNewAdmin] = useState({ nom: "", email: "", telephone: "" });
+
+  const handleAddAdmin = async () => { if (!newAdmin.nom.trim()) return addToast("Erreur", "Nom requis.", "error"); const id = String(Date.now()); const adminData = { id, ...newAdmin }; const updated = [...admins, adminData]; setAdmins(updated); storage.set("admin_contacts", JSON.stringify(updated)); if (hasFirebase && dbUser) { try { await getCollectionRef("admin_contacts").doc(id).set(adminData); } catch(e) {} } setNewAdmin({ nom: "", email: "", telephone: "" }); addToast("Contact enregistré", "", "success"); };
+  const handleDeleteAdmin = async (id) => { const updated = admins.filter(a => a.id !== id); setAdmins(updated); storage.set("admin_contacts", JSON.stringify(updated)); if (hasFirebase && dbUser) { try { await getCollectionRef("admin_contacts").doc(String(id)).delete(); } catch(e) {} } };
+
+  const totalDu = expenses.reduce((s, r) => s + (parseFloat(r.cells.montant_du) || 0), 0);
+  const totalPaye = expenses.reduce((s, r) => s + (parseFloat(r.cells.montant_paye) || 0), 0);
+  const solde = totalDu - totalPaye;
+
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:12, marginBottom:"1.5rem" }}>
+        {[["Budget Global Engagé", totalDu, "var(--color-brand-primary)", "#EEF1FB"], ["Cumul Déjà Réglé", totalPaye, "#1A6B35", "#EAF3DE"], ["Net à Payer (Dettes)", solde, solde > 0 ? "#A32D2D" : "#1A6B35", solde > 0 ? "#FCEBEB" : "#EAF3DE"]].map(([l, v, c, b]) => (
+          <div key={l} style={{ background:b, border:`1px solid ${c}12`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+            <div style={{ fontSize:11, color:c, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>{l}</div>
+            <div style={{ fontSize:24, fontWeight:800, color:c }}>{v.toLocaleString("fr-FR")} <span style={{ fontSize:14 }}>FCFA</span></div>
+          </div>
+        ))}
+      </div>
+      
+      <div style={{ display:"flex", alignItems:"center", justifycontent:"space-between", marginBottom:"1rem", flexWrap:"wrap", gap:10 }}>
+        <div><h2 style={{ margin:0, fontSize:16, fontWeight:700, color:"var(--color-brand-primary)" }}>Registre Général des Coûts & Dépenses</h2></div>
+      </div>
+      <ExcelTable columns={DEPENSE_COLS} rows={expenses} onRowsChange={onExpensesChange} color={DEPENSE_COLOR}/>
+      
+      <div style={{ marginTop:"2rem", background:"var(--color-background-primary)", borderRadius:18, border:"1px solid var(--color-border-tertiary)", padding:"20px", boxShadow:"var(--shadow-sm)" }}>
+        <h3 style={{ margin:"0 0 10px 0", fontSize:14.5, fontWeight:700, display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-users" style={{ color:"var(--color-brand-primary)" }}/> Contacts des Administrateurs / Propriétaires</h3>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))", gap:10 }}>
+          <input value={newAdmin.nom} onChange={e => setNewAdmin(a => ({...a, nom:e.target.value}))} placeholder="Nom *"/>
+          <input value={newAdmin.email} onChange={e => setNewAdmin(a => ({...a, email:e.target.value}))} placeholder="E-mail"/>
+          <input value={newAdmin.telephone} onChange={e => setNewAdmin(a => ({...a, telephone:e.target.value}))} placeholder="WhatsApp (ex: +237...)"/>
+          <button onClick={handleAddAdmin} style={{ padding:"10px 18px", border:"none", background:"var(--color-brand-primary)", color:"#fff", borderRadius:10, fontWeight:700, cursor: "pointer" }}>Ajouter</button>
+        </div>
+        {admins.length > 0 && (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))", gap:10, marginTop:16 }}>
+            {admins.map(admin => (
+              <div key={admin.id} style={{ border:"1px solid var(--color-border-tertiary)", background:"var(--color-background-tertiary)", borderRadius:12, padding:"12px 14px", display:"flex", justifycontent:"space-between", alignItems:"center" }}>
+                <div><div style={{ fontWeight:700, fontSize:13.5 }}>{admin.nom}</div><div style={{ fontSize:11.5, color:"var(--color-text-secondary)", marginTop:2 }}>{admin.email} {admin.telephone && `· ${admin.telephone}`}</div></div>
+                <button onClick={() => handleDeleteAdmin(admin.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#A32D2D", fontSize:16, padding:6 }}><i className="ti ti-trash"/></button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : MATÉRIEL
+// ----------------------------------------------------------------------
+function MaterielTab({ materiel, onMaterielChange }) {
+  const color = "#D97706";
+  const total = materiel.length; const enReparation = materiel.filter(m => m.cells.etat === "En réparation" || m.cells.etat === "Défectueux").length;
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12, marginBottom:"1.5rem" }}>
+        <div style={{ background:"#FFFBEB", border:`1px solid ${color}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Total Équipements</div><div style={{ fontSize:24, fontWeight:800, color }}>{total}</div>
+        </div>
+        <div style={{ background:enReparation>0?"#FEF2F2":"#ECFDF5", border:`1px solid ${enReparation>0?"#EF4444":"#10B981"}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color:enReparation>0?"#EF4444":"#10B981", fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>En Réparation / Défectueux</div><div style={{ fontSize:24, fontWeight:800, color:enReparation>0?"#EF4444":"#10B981" }}>{enReparation}</div>
+        </div>
+      </div>
+      <ExcelTable columns={MATERIEL_COLS} rows={materiel} onRowsChange={onMaterielChange} color={color}/>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : OUVRIERS
+// ----------------------------------------------------------------------
+function OuvriersTab({ ouvriers, onOuvriersChange }) {
+  const color = "#0284C7";
+  const today = new Date().toISOString().split('T')[0];
+  const presentsToday = ouvriers.filter(o => o.cells.date === today && o.cells.statut === "Présent").length;
+  const totalAvances = ouvriers.reduce((acc, o) => acc + (parseFloat(o.cells.avance) || 0), 0);
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12, marginBottom:"1.5rem" }}>
+        <div style={{ background:"#F0F9FF", border:`1px solid ${color}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Présents Aujourd'hui</div><div style={{ fontSize:24, fontWeight:800, color }}>{presentsToday}</div>
+        </div>
+        <div style={{ background:"#F0F9FF", border:`1px solid ${color}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Cumul Avances (Historique)</div><div style={{ fontSize:24, fontWeight:800, color }}>{totalAvances.toLocaleString("fr-FR")} <span style={{fontSize:14}}>FCFA</span></div>
+        </div>
+      </div>
+      <ExcelTable columns={OUVRIERS_COLS} rows={ouvriers} onRowsChange={onOuvriersChange} color={color}/>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : TRANSFORMATION
+// ----------------------------------------------------------------------
+function TransformationTab({ transformation, onTransformationChange, availableCultures }) {
+  const color = "#7C3AED"; const cols = useMemo(() => getTransformationCols(availableCultures), [availableCultures]);
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12, marginBottom:"1.5rem" }}>
+        <div style={{ background:"#F5F3FF", border:`1px solid ${color}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Opérations de Transformation</div><div style={{ fontSize:24, fontWeight:800, color }}>{transformation.length}</div>
+        </div>
+      </div>
+      <ExcelTable columns={cols} rows={transformation} onRowsChange={onTransformationChange} color={color}/>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// ONGLET : STOCKS
+// ----------------------------------------------------------------------
+function StocksTab({ stocks, onStocksChange }) {
+  const color = "#059669";
+  const alertCount = stocks.filter(r => (parseFloat(r.cells.qte) || 0) <= (parseFloat(r.cells.seuil) || 0)).length;
+  const totalValue = stocks.reduce((acc, r) => acc + ((parseFloat(r.cells.qte)||0) * (parseFloat(r.cells.valeur_u)||0)), 0);
+  return (
+    <div style={{ animation: "fadeIn 0.3s" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12, marginBottom:"1.5rem" }}>
+        <div style={{ background:"#ECFDF5", border:`1px solid ${color}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color, fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Valeur Est. du Stock</div><div style={{ fontSize:24, fontWeight:800, color }}>{totalValue.toLocaleString("fr-FR")} <span style={{fontSize:14}}>FCFA</span></div>
+        </div>
+        <div style={{ background:alertCount>0?"#FEF2F2":"#F9FAFB", border:`1px solid ${alertCount>0?"#EF4444":"var(--color-text-secondary)"}22`, borderRadius:16, padding:"18px", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ fontSize:11, color:alertCount>0?"#EF4444":"var(--color-text-primary)", fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>Articles en Alerte (≤ Seuil)</div><div style={{ fontSize:24, fontWeight:800, color:alertCount>0?"#EF4444":"var(--color-text-primary)" }}>{alertCount}</div>
+        </div>
+      </div>
+      <ExcelTable columns={STOCKS_COLS} rows={stocks} onRowsChange={onStocksChange} color={color}/>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MAIN EXPLOITATION DASHBOARD
+// ----------------------------------------------------------------------
+function DashboardChampetre({ user, onLogout }) {
+  const [tasks, setTasks] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [form, setForm] = useState({ titre:"", culture:"", categorie:"labour", statut:"planifie", priorite:"moyenne", parcelle:"", description:"", dateDebut:"", dateFin:"", responsable:"", rappel:false, rappelJours:1 });
+  
+  // Champs pour l'assistant de saisie intelligent
+  const [aiPromptInput, setAiPromptInput] = useState("");
+  const [aiParsing, setAiParsing] = useState(false);
+  
+  const [dbUser, setDbUser] = useState(null);
+  const [admins, setAdmins] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showGlobalReport, setShowGlobalReport] = useState(false);
+  
+  // Logistics Operational States
+  const [rawExpenses, setRawExpenses] = useState([]);
+  const [availableCultures, setAvailableCultures] = useState({});
+  const [allPlantationData, setAllPlantationData] = useState({});
+  const [materielData, setMaterielData] = useState([]);
+  const [ouvriersData, setOuvriersData] = useState([]);
+  const [transformationData, setTransformationData] = useState([]);
+  const [stocksData, setStocksData] = useState([]);
+  const [archivesData, setArchivesData] = useState([]);
+
+  const loadCulturesAndData = useCallback(async () => {
+    const r = await storage.get("custom_plantation_configs");
+    let storedConfigs = {}; if (r?.value) storedConfigs = JSON.parse(r.value);
+    const mergedCultures = { ...DEFAULT_PLANTATION_CONFIGS, ...storedConfigs };
+    setAvailableCultures(mergedCultures);
+    const localData = {};
+    for (const key of Object.keys(mergedCultures)) { const dataRes = await storage.get(`plantation_${key}`); localData[key] = dataRes?.value ? JSON.parse(dataRes.value) : []; }
+    setAllPlantationData(localData);
+  }, []);
+
+  useEffect(() => { loadCulturesAndData(); window.addEventListener("culturesUpdated", loadCulturesAndData); return () => window.removeEventListener("culturesUpdated", loadCulturesAndData); }, [loadCulturesAndData]);
+
+  const addToast = useCallback((title, message, type="success") => { 
+    const id = Date.now() + Math.random(); 
+    setToasts(p => [...p, { id, title, message, type }]); 
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 4500); 
+  }, []);
+
+  useEffect(() => {
+    if (!hasFirebase) { setLoaded(true); return; }
+    const initAuth = async () => { try { if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await auth.signInWithCustomToken(__initial_auth_token); else await auth.signInAnonymously(); } catch (e) { console.warn(e); } };
+    initAuth(); const unsubscribe = auth.onAuthStateChanged(user => setDbUser(user)); return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const collections = [
+      { name: "materiel_equipements", setter: setMaterielData }, { name: "presence_ouvriers", setter: setOuvriersData },
+      { name: "transformation_cultures", setter: setTransformationData }, { name: "gestion_stocks", setter: setStocksData }
+    ];
+    if (!hasFirebase || !dbUser) { collections.forEach(async (col) => { const r = await storage.get(col.name); if (r?.value) col.setter(JSON.parse(r.value)); }); return; }
+    const unsubscribes = collections.map(col => {
+      const ref = getCollectionRef(col.name); return ref.onSnapshot(snapshot => { const docs = []; snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() })); const mapped = docs.map(d => ({ id: d.id, cells: d.cells || {} })); col.setter(mapped); });
+    });
+    return () => unsubscribes.forEach(unsub => unsub());
+  }, [dbUser]);
+
+  const handleGenericDataChange = async (collectionName, setLocalState, newRows, isAdded=false, colId="", val="", isBlur=false) => {
+    setLocalState(newRows); if (isAdded || isBlur) { storage.set(collectionName, JSON.stringify(newRows)); if (!hasFirebase || !dbUser) return;
+      try { const ref = getCollectionRef(collectionName); const existingIds = newRows.map(r => String(r.id)); const currentSnap = await ref.get(); currentSnap.forEach(async (doc) => { if (!existingIds.includes(doc.id)) await ref.doc(doc.id).delete(); });
+        for (const r of newRows) await ref.doc(String(r.id)).set({ cells: r.cells, updatedAt: new Date().toISOString() }); } catch (e) { console.warn(e); } }
+  };
+
+  useEffect(() => {
+    if (!hasFirebase || !dbUser) { 
+      storage.get("tasks_champetre").then(r => { if (r?.value) setTasks(JSON.parse(r.value)); setLoaded(true); }); 
+      storage.get("depenses_plantation").then(r => { if (r?.value) setRawExpenses(JSON.parse(r.value)); }); 
+      storage.get("admin_contacts").then(r => { if (r?.value) setAdmins(JSON.parse(r.value)); }); 
+      storage.get("agricom_archives").then(r => { if (r?.value) setArchivesData(JSON.parse(r.value)); });
+      return; 
+    }
+    const refT = getCollectionRef("tasks_champetre"); const unsubT = refT.onSnapshot(s => { const docs = []; s.forEach(d => docs.push({ id: d.id, ...d.data() })); setTasks(docs); setLoaded(true); });
+    const refD = getCollectionRef("depenses_plantation"); const unsubD = refD.onSnapshot(s => { const docs = []; s.forEach(d => docs.push({ id: d.id, ...d.data() })); setRawExpenses(docs); });
+    const refA = getCollectionRef("admin_contacts"); const unsubA = refA.onSnapshot(s => { const docs = []; s.forEach(d => docs.push({ id: d.id, ...d.data() })); setAdmins(docs); });
+    const refArch = getCollectionRef("agricom_archives"); const unsubArch = refArch.onSnapshot(s => { const docs = []; s.forEach(d => docs.push({ id: d.id, ...d.data() })); setArchivesData(docs); });
+    return () => { unsubT(); unsubD(); unsubA(); unsubArch(); };
+  }, [dbUser]);
+
+  // Notifications programmées
+  useEffect(() => {
+    if (!loaded || !tasks.length) return;
+    const triggerRappels = () => {
+      const hours = new Date().getHours(); const scheduleHours = [6, 8, 18, 21];
+      if (scheduleHours.includes(hours)) {
+        tasks.filter(t => { const d = getDaysUntil(t.dateFin); return d !== null && d >= 0 && d <= 3 && t.statut !== "termine"; }).forEach(t => { const d = getDaysUntil(t.dateFin); addToast("⏰ Rappel Programmé", `${t.titre} — ${d === 0 ? "Aujourd'hui !" : `dans J-${d}`}`, "warning"); });
+      }
+    };
+    triggerRappels(); const interval = setInterval(triggerRappels, 3600000); return () => clearInterval(interval);
+  }, [loaded, tasks, addToast]);
+
+  const resetForm = () => setForm({ titre:"", culture:"", categorie:"labour", statut:"planifie", priorite:"moyenne", parcelle:"", description:"", dateDebut:"", dateFin:"", responsable:"", rappel:false, rappelJours:1 });
+
+  const handleExpensesChange = async (newRows, isAdded=false, colId="", val="", isBlur=false) => {
+    setRawExpenses(newRows); if (isAdded || isBlur) { storage.set("depenses_plantation", JSON.stringify(newRows)); if (!hasFirebase || !dbUser) return;
+      try { const ref = getCollectionRef("depenses_plantation"); const existingIds = newRows.map(r => String(r.id)); const currentSnap = await ref.get(); currentSnap.forEach(async (doc) => { if (!existingIds.includes(doc.id)) await ref.doc(doc.id).delete(); });
+        for (const r of newRows) await ref.doc(String(r.id)).set({ cells: r.cells, updatedAt: new Date().toISOString() }); } catch (e) {} }
+  };
+
+  const handlePlantationRowsChange = useCallback(async (plantKey, newRows, isAdded=false, colId="", val="", isBlur=false) => {
+    setAllPlantationData(prev => ({ ...prev, [plantKey]: newRows })); if (isAdded || isBlur) { await storage.set(`plantation_${plantKey}`, JSON.stringify(newRows)); if (!hasFirebase || !dbUser) return;
+      try { const ref = getCollectionRef(`plantation_${plantKey}`); const existingIds = newRows.map(r => String(r.id)); const currentSnap = await ref.get(); currentSnap.forEach(async (doc) => { if (!existingIds.includes(doc.id)) await ref.doc(doc.id).delete(); });
+        for (const r of newRows) await ref.doc(String(r.id)).set({ cells: r.cells, updatedAt: new Date().toISOString() }); } catch (e) {} }
+  }, [dbUser, availableCultures]);
+
+  // Synchronisation des archives
+  const handleArchivesChange = async (newArchives) => {
+    setArchivesData(newArchives);
+    await storage.set("agricom_archives", JSON.stringify(newArchives));
+    if (!hasFirebase || !dbUser) return;
+    try {
+      const ref = getCollectionRef("agricom_archives");
+      const existingIds = newArchives.map(r => String(r.id));
+      const currentSnap = await ref.get();
+      currentSnap.forEach(async (doc) => { if (!existingIds.includes(doc.id)) await ref.doc(doc.id).delete(); });
+      for (const r of newArchives) {
+        await ref.doc(String(r.id)).set({ titre: r.titre, annee: r.annee, categorie: r.categorie, description: r.description, date: r.date, updatedAt: new Date().toISOString() });
+      }
+    } catch (e) { console.warn(e); }
+  };
+
+  const handleResetAllData = async () => {
+    try {
+      const keysToClear = [ "tasks_champetre", "depenses_plantation", "admin_contacts", "custom_plantation_configs", "materiel_equipements", "presence_ouvriers", "transformation_cultures", "gestion_stocks", "forum_messages_v2", "agro_ia_threads_v1", "agricom_archives" ];
+      keysToClear.forEach(key => localStorage.removeItem(key));
+      Object.keys(availableCultures).forEach(key => { localStorage.removeItem(`plantation_${key}`); });
+      addToast("Réinitialisation", "Toutes les données effacées. Rechargement...", "success"); setTimeout(() => window.location.reload(), 1500);
+    } catch(err) { addToast("Erreur", "Erreur lors de la réinitialisation.", "error"); }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.titre.trim()) return addToast("Requis", "Saisissez un titre.", "error");
+    const targetId = editingTask ? String(editingTask.id) : String(Date.now());
+    const taskData = { ...form, id: targetId, createdAt: editingTask ? editingTask.createdAt : new Date().toISOString(), updatedAt: new Date().toISOString() };
+    try {
+      if (hasFirebase && dbUser) await getCollectionRef("tasks_champetre").doc(targetId).set(taskData);
+      else { const updated = editingTask ? tasks.map(t => t.id === editingTask.id ? taskData : t) : [taskData, ...tasks]; setTasks(updated); await storage.set("tasks_champetre", JSON.stringify(updated)); }
+      addToast(editingTask ? "Modifié" : "Créé", `« ${form.titre} » enregistré.`, "success"); setEditingTask(null); resetForm(); setShowForm(false);
+    } catch (e) {}
+  };
+
+  const handleAIGenerateTask = async () => {
+    if (!aiPromptInput.trim()) return addToast("Saisie manquante", "Décrivez l'activité.", "warning");
+    setAiParsing(true); addToast("Génération IA", "Gemini configure votre tâche...", "info");
+    const systemPrompt = `Tu es un assistant de saisie agricole...`;
+    try {
+      const aiResponse = await callGemini(aiPromptInput, systemPrompt, {
+          type: "OBJECT",
+          properties: {
+            titre: { type: "STRING" },
+            categorie: { type: "STRING" },
+            statut: { type: "STRING" },
+            priorite: { type: "STRING" },
+            culture: { type: "STRING" },
+            parcelle: { type: "STRING" },
+            description: { type: "STRING" },
+            dateDebut: { type: "STRING" },
+            dateFin: { type: "STRING" },
+            responsable: { type: "STRING" },
+            rappel: { type: "BOOLEAN" },
+            rappelJours: { type: "INTEGER" }
+          },
+          required: ["titre", "categorie", "statut", "priorite"]
+      });
+      const parsedData = JSON.parse(aiResponse);
+      setForm(prev => ({ ...prev, ...parsedData })); setShowForm(true); addToast("✨ Formulaire rempli", "Vérifiez les données.", "success"); setAiPromptInput("");
+    } catch (err) { addToast("Erreur IA", "L'analyse a échoué. Saisie manuelle requise.", "error"); } finally { setAiParsing(false); }
+  };
+
+  const todayStr = getLocalTodayString();
+  const plantationStats = useMemo(() => {
+    let plants = 0; let parcellesSet = new Set();
+    Object.entries(allPlantationData).forEach(([key, rows]) => {
+      const cfg = availableCultures[key]; if (!cfg) return;
+      const numCol = cfg.columns.find(c => ["nb_plants", "nb_arbres", "nb_pieds"].includes(c.id));
+      rows.forEach(r => { if (numCol && r.cells[numCol.id]) plants += (parseFloat(r.cells[numCol.id]) || 0); if (r.cells.parcelle && r.cells.parcelle.trim()) parcellesSet.add(r.cells.parcelle.trim().toLowerCase()); });
+    }); return { plants, parcellesCount: parcellesSet.size };
+  }, [allPlantationData, availableCultures]);
+
+  const ouvriersPresentsAujourdhui = useMemo(() => ouvriersData.filter(o => o.cells.date === todayStr && o.cells.statut === "Présent").length, [ouvriersData, todayStr]);
+  const enPanneMateriel = useMemo(() => materielData.filter(m => m.cells.etat === "En réparation" || m.cells.etat === "Défectueux").length, [materielData]);
+  const alerteStocks = useMemo(() => stocksData.filter(r => (parseFloat(r.cells.qte) || 0) <= (parseFloat(r.cells.seuil) || 0)), [stocksData]);
+  const stats = { total:tasks.length, planifie:tasks.filter(t=>t.statut==="planifie").length, enCours:tasks.filter(t=>t.statut==="en_cours").length, termine:tasks.filter(t=>t.statut==="termine").length };
+  const totalRappelsCount = tasks.filter(t => { const d = getDaysUntil(t.dateFin); return d !== null && d <= 7 && t.statut !== "termine"; }).length + rawExpenses.filter(exp => { const d = getDaysUntil(exp.cells?.date_echeance); return d !== null && d <= 7 && exp.cells?.statut !== "Payé"; }).length;
+
+  const generateReportText = () => {
+    const totalDu = rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_du) || 0), 0);
+    const totalPaye = rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_paye) || 0), 0);
+    const dettes = totalDu - totalPaye;
+    
+    // Répartition de la dette
+    const dettesOuvriers = rawExpenses.filter(e => ["Salaire ouvrier", "Dette de travail"].includes(e.cells.categorie) && e.cells.statut !== "Payé").reduce((s,r) => s + ((parseFloat(r.cells.montant_du)||0)-(parseFloat(r.cells.montant_paye)||0)), 0);
+    const dettesMateriel = rawExpenses.filter(e => e.cells.categorie === "Matériel agricole" && e.cells.statut !== "Payé").reduce((s,r) => s + ((parseFloat(r.cells.montant_du)||0)-(parseFloat(r.cells.montant_paye)||0)), 0);
+    const autresDettes = dettes - dettesOuvriers - dettesMateriel;
+
+    const dateFR = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let msg = `📊 *RAPPORT GLOBAL - AGRICOM* 🌿\n`;
+    msg += `📅 Date : ${dateFR}\n\n`;
+    msg += `*1. SYNTHÈSE FINANCIÈRE (À DÉCAISSER)* 💰\n`;
+    msg += `- Total Net des Sommes Dues : *${dettes > 0 ? dettes.toLocaleString("fr-FR") : 0} FCFA*\n`;
+    
+    if (dettes > 0) {
+      msg += `   • Salaires & Main d'œuvre : ${dettesOuvriers.toLocaleString("fr-FR")} FCFA\n`;
+      msg += `   • Réparations & Matériel : ${dettesMateriel.toLocaleString("fr-FR")} FCFA\n`;
+      msg += `   • Autres Fournisseurs : ${autresDettes.toLocaleString("fr-FR")} FCFA\n`;
+    }
+    
+    msg += `\n*2. TRAVAUX & ACTIVITÉS* 🚜\n`;
+    msg += `- Tâches Actives : ${stats.planifie + stats.enCours}\n`;
+    msg += `- Alertes Échéance : ${tasks.filter(t => { const d = getDaysUntil(t.dateFin); return d !== null && d <= 7 && t.statut !== "termine"; }).length}\n\n`;
+    msg += `*3. LOGISTIQUE & ÉQUIPE* 👥\n`;
+    msg += `- Ouvriers Présents ce jour : ${ouvriersPresentsAujourdhui}\n`;
+    msg += `- Matériel en Panne/Réparation : ${enPanneMateriel}\n`;
+    msg += `- Alertes Rupture Stocks : ${alerteStocks.length}\n\n`;
+    msg += `*4. PLANTATIONS & ARCHIVES* 🌱\n`;
+    msg += `- Total Plants/Arbres : ${plantationStats.plants.toLocaleString("fr-FR")}\n`;
+    msg += `- Parcelles Traitées : ${plantationStats.parcellesCount}\n\n`;
+    msg += `- Fiches Historiques Archivées : ${archivesData.length}\n\n`;
+    msg += `Généré automatiquement par l'application Agricom.`;
+    return msg;
+  };
+
+  const sidebarItem = (id, icon, label, badge) => {
+    const isActive = activeTab === id;
+    return (
+      <button onClick={() => setActiveTab(id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: "none", background: isActive ? "rgba(168, 255, 0, 0.15)" : "transparent", color: isActive ? "var(--color-brand-accent)" : "#FFFFFF", borderRadius: "12px", fontWeight: isActive ? "700" : "500", fontSize: "14px", cursor: "pointer", transition: "var(--transition-smooth)", marginBottom: "4px", justifyContent: sidebarExpanded ? "flex-start" : "center", position: "relative" }} title={!sidebarExpanded ? label : ""}>
+        <i className={`ti ${icon}`} style={{ fontSize: "20px", color: isActive ? "var(--color-brand-accent)" : "inherit" }} aria-hidden="true"/>
+        {sidebarExpanded && <span style={{ flex: 1, textAlign: "left" }}>{label}</span>}
+        {badge > 0 && <span style={{ background: "var(--color-brand-accent)", color: "var(--color-brand-primary)", borderRadius: "10px", fontSize: "11px", padding: sidebarExpanded ? "2px 8px" : "1px 5px", fontWeight: "700", position: sidebarExpanded ? "static" : "absolute", top: sidebarExpanded ? "auto" : "4px", right: sidebarExpanded ? "auto" : "4px" }}>{badge}</span>}
+      </button>
+    );
+  };
+
+  return (
+    <div className="app-container">
+      <SettingsModal show={showSettings} onClose={() => setShowSettings(false)} onResetAll={handleResetAllData} />
+      <GlobalReportModal show={showGlobalReport} onClose={() => setShowGlobalReport(false)} summaryText={generateReportText()} />
+
+      <aside className={`sidebar ${sidebarExpanded ? "sidebar-expanded" : "sidebar-collapsed"}`}>
+        <div className="sidebar-header">
+          {sidebarExpanded && <div className="sidebar-logo"><i className="ti ti-plant-2" style={{ fontSize: "24px" }} aria-hidden="true"/><span>Agricom</span></div>}
+          <button className="sidebar-menu-btn" onClick={() => setSidebarExpanded(!sidebarExpanded)}><i className={`ti ${sidebarExpanded ? 'ti-layout-sidebar-left-collapse' : 'ti-menu-2'}`} style={{ fontSize: "20px" }} aria-hidden="true"/></button>
+        </div>
+        <div className="sidebar-content">
+          <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.6)", textTransform:"uppercase", margin:"10px 16px 6px", display:sidebarExpanded?"block":"none" }}>Exploitation</div>
+          {sidebarItem("dashboard", "ti-layout-dashboard", "Tableau de bord")}
+          {sidebarItem("analyses", "ti-chart-line", "Analyses")}
+          {sidebarItem("taches", "ti-list", "Travaux")}
+          {sidebarItem("rappels", "ti-bell", "Rappels", totalRappelsCount)}
+          {sidebarItem("plantation", "ti-seeding", "Suivi Plantation")}
+          <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.6)", textTransform:"uppercase", margin:"16px 16px 6px", display:sidebarExpanded?"block":"none" }}>Opérations</div>
+          {sidebarItem("ouvriers", "ti-users", "Ouvriers")}
+          {sidebarItem("materiel", "ti-tractor", "Équipements")}
+          {sidebarItem("transformation", "ti-flask", "Transformation")}
+          {sidebarItem("stocks", "ti-packages", "Stocks")}
+          {sidebarItem("depenses", "ti-report-money", "Dépenses")}
+          <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.6)", textTransform:"uppercase", margin:"16px 16px 6px", display:sidebarExpanded?"block":"none" }}>Historique & IA</div>
+          {sidebarItem("conseils_ia", "ti-sparkles", "Agro-IA ✨")}
+          {sidebarItem("archive", "ti-archive", "Archives")}
+        </div>
+        <div className="sidebar-footer">
+          <div className="sidebar-profile" style={{ justifyContent: sidebarExpanded ? "flex-start" : "center", marginBottom: 12 }}>
+            <button onClick={() => setShowSettings(true)} style={{ background: "none", border: "none", color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "6px 4px", fontSize: "13.5px", fontWeight: 600, justifyContent: sidebarExpanded ? "flex-start" : "center" }} title="Paramètres">
+              <i className="ti ti-settings" style={{ fontSize: "20px", color: "var(--color-brand-accent)" }} />
+              {sidebarExpanded && <span>Paramètres généraux</span>}
+            </button>
+          </div>
+          <div className="sidebar-profile" style={{ justifyContent: sidebarExpanded ? "flex-start" : "center" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, var(--color-brand-accent), var(--color-brand-primary))", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-brand-primary)", fontWeight: "700" }}>{user?.name ? user.name.charAt(0).toUpperCase() : "C"}</div>
+            {sidebarExpanded && (
+              <div style={{ minWidth: 0, flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div><div style={{ fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color:"#fff" }}>{user?.name || "Chef d'exploitation"}</div></div>
+                <button onClick={onLogout} style={{background: 'none', border: 'none', color: '#FF4D4D', cursor: 'pointer', padding: 4}}><i className="ti ti-logout" style={{fontSize: 18}}></i></button>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      <nav className="mobile-nav-bar">
+        {[{id:"dashboard", icon:"ti-layout-dashboard", l:"Accueil"}, {id:"analyses", icon:"ti-chart-line", l:"Analyses"}, {id:"taches", icon:"ti-list", l:"Travaux"}, {id:"plantation", icon:"ti-seeding", l:"Suivi"}, {id:"depenses", icon:"ti-report-money", l:"Dépenses"}, {id:"conseils_ia", icon:"ti-sparkles", l:"Agro-IA"}, {id:"archive", icon:"ti-archive", l:"Archives"}].map(m => (
+          <button key={m.id} className={`mobile-nav-item ${activeTab === m.id ? "mobile-nav-item-active" : ""}`} onClick={() => setActiveTab(m.id)}>
+            <i className={`ti ${m.icon}`} style={{ fontSize: "20px" }} aria-hidden="true"/><span>{m.l}</span>
+          </button>
+        ))}
+      </nav>
+
+      <Toast toasts={toasts}/>
+
+      <main className="main-content">
+        <div style={{ display: "flex", justifycontent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: "20px", background: "var(--color-background-primary)", padding: "16px 24px", borderRadius: "16px", border: "1px solid var(--color-border-tertiary)" }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "var(--color-brand-primary)" }}>Agricom 🌿</h1>
+          </div>
+          <div style={{ display: "flex", gap: "10px", flexWrap:"wrap" }}>
+             <button onClick={() => setShowGlobalReport(true)} style={{ background:"#25D366", color:"white", border:"none", padding:"10px 16px", borderRadius:12, fontWeight:700, display:"flex", alignItems:"center", gap:6, cursor:"pointer" }}>
+               <i className="ti ti-brand-whatsapp" aria-hidden="true"/> Rapport Global
+             </button>
+             <button onClick={()=>{ resetForm(); setEditingTask(null); setShowForm(true); setActiveTab("taches"); }} style={{ background:"var(--color-brand-primary)", color:"white", border:"none", padding:"10px 16px", borderRadius:12, fontWeight:700, display:"flex", alignItems:"center", gap:6, cursor:"pointer" }}>
+               <i className="ti ti-plus" aria-hidden="true"/> Nouveau
+             </button>
+          </div>
+        </div>
+
+        <div key={activeTab} style={{ animation: "slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+          
+          {activeTab==="analyses" && <AnalysesTab tasks={tasks} expenses={rawExpenses} ouvriers={ouvriersData} transformations={transformationData} materiel={materielData} stocks={stocksData} />}
+
+          {activeTab==="dashboard" && (
+            <div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:14, marginBottom:"1.5rem" }}>
+                <div style={{ background:"#EEEDFE", borderRadius:16, padding:"16px", border:"1px solid #534AB71e" }}>
+                  <div style={{ fontSize:11, color:"#534AB7", marginBottom:6, fontWeight:700, textTransform:"uppercase" }}>Calendrier Agricole</div>
+                  <div style={{ fontSize:24, fontWeight:800, color:"#534AB7" }}>{stats.planifie + stats.enCours} <span style={{ fontSize:13, fontWeight:500 }}>travaux actifs</span></div>
+                </div>
+                <div style={{ background:"#EAF3DE", borderRadius:16, padding:"16px", border:"1px solid #3B6D111e" }}>
+                  <div style={{ fontSize:11, color:"#3B6D11", marginBottom:6, fontWeight:700, textTransform:"uppercase" }}>Patrimoine Végétal</div>
+                  <div style={{ fontSize:24, fontWeight:800, color:"#3B6D11" }}>{plantationStats.plants.toLocaleString("fr-FR")} <span style={{ fontSize:13, fontWeight:500 }}>plants</span></div>
+                </div>
+                <div style={{ background:"#EEF1FB", borderRadius:16, padding:"16px", border:"1px solid #2C3E8C1e" }}>
+                  <div style={{ fontSize:11, color:"#2C3E8C", marginBottom:6, fontWeight:700, textTransform:"uppercase" }}>Trésorerie Exploitation</div>
+                  <div style={{ fontSize:24, fontWeight:800, color: (rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_du) || 0), 0) - rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_paye) || 0), 0)) > 0 ? "#A32D2D" : "#1A6B35" }}>{(rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_du) || 0), 0) - rawExpenses.reduce((s, r) => s + (parseFloat(r.cells.montant_paye) || 0), 0)).toLocaleString("fr-FR")} <span style={{ fontSize:13, fontWeight:500 }}>FCFA dûs</span></div>
+                </div>
+              </div>
+
+              <h2 style={{ fontSize:15, fontWeight:700, margin:"1.5rem 0 12px", color:"var(--color-text-primary)" }}>Indicateurs Opérationnels</h2>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:14, marginBottom:"1.5rem" }}>
+                <div onClick={() => setActiveTab("ouvriers")} style={{ background:"var(--color-background-primary)", borderRadius:14, padding:"16px", border:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                  <div style={{ width:42, height:42, borderRadius:12, background:"#0284C715", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><i className="ti ti-users" style={{ color:"#0284C7", fontSize:22 }}/></div>
+                  <div><div style={{ fontSize:11.5, color:"var(--color-text-secondary)", fontWeight:600, textTransform:"uppercase" }}>Ouvriers Présents</div><div style={{ fontSize:20, fontWeight:800, color:"#0284C7" }}>{ouvriersPresentsAujourdhui} <span style={{fontSize:12, fontWeight:500, color:"var(--color-text-secondary)"}}>/ {ouvriersData.length}</span></div></div>
+                </div>
+                <div onClick={() => setActiveTab("materiel")} style={{ background:"var(--color-background-primary)", borderRadius:14, padding:"16px", border:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                  <div style={{ width:42, height:42, borderRadius:12, background:"#D9770615", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><i className="ti ti-tractor" style={{ color:"#D97706", fontSize:22 }}/></div>
+                  <div><div style={{ fontSize:11.5, color:"var(--color-text-secondary)", fontWeight:600, textTransform:"uppercase" }}>Équipements en Panne</div><div style={{ fontSize:20, fontWeight:800, color: enPanneMateriel > 0 ? "#EF4444" : "#D97706" }}>{enPanneMateriel}</div></div>
+                </div>
+                <div onClick={() => setActiveTab("transformation")} style={{ background:"var(--color-background-primary)", borderRadius:14, padding:"16px", border:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                  <div style={{ width:42, height:42, borderRadius:12, background:"#7C3AED15", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><i className="ti ti-flask" style={{ color:"#7C3AED", fontSize:22 }}/></div>
+                  <div><div style={{ fontSize:11.5, color:"var(--color-text-secondary)", fontWeight:600, textTransform:"uppercase" }}>Transformations</div><div style={{ fontSize:20, fontWeight:800, color:"#7C3AED" }}>{transformationData.length}</div></div>
+                </div>
+                <div onClick={() => setActiveTab("stocks")} style={{ background:"var(--color-background-primary)", borderRadius:14, padding:"16px", border:"1px solid var(--color-border-tertiary)", display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", cursor:"pointer" }}>
+                  <div style={{ width:42, height:42, borderRadius:12, background:"#05966915", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><i className="ti ti-packages" style={{ color:"#059669", fontSize:22 }}/></div>
+                  <div><div style={{ fontSize:11.5, color:"var(--color-text-secondary)", fontWeight:600, textTransform:"uppercase" }}>Alertes de Stocks</div><div style={{ fontSize:20, fontWeight:800, color: alerteStocks.length > 0 ? "#EF4444" : "#059669" }}>{alerteStocks.length}</div></div>
+                </div>
+              </div>
+
+              <h2 style={{ fontSize:15, fontWeight:700, margin:"1.5rem 0 12px", color:"var(--color-text-primary)" }}>Logistique & Traçabilité Récente</h2>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:16, marginBottom:"2rem" }}>
+                <div style={{ background:"var(--color-background-primary)", borderRadius:16, padding:18, border:"1px solid var(--color-border-tertiary)" }}>
+                  <h3 style={{ margin:"0 0 12px", fontSize:13.5, fontWeight:700, color:"#059669", display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-packages"/> Ruptures Stocks</h3>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {alerteStocks.slice(0,3).map((item, idx) => (
+                      <div key={idx} style={{ background:"var(--color-background-tertiary)", borderRadius:10, padding:"8px 12px", border:"1px solid var(--color-border-tertiary)", display:"flex", justifycontent:"space-between", alignItems:"center" }}>
+                        <div><div style={{ fontWeight:700, fontSize:13 }}>{item.cells.nom}</div><div style={{ fontSize:11, color:"var(--color-text-secondary)" }}>Seuil: {item.cells.seuil}</div></div>
+                        <div style={{ fontSize:13, fontWeight:800, color:"#A32D2D" }}>{item.cells.qte} {item.cells.unite}</div>
+                      </div>
+                    ))}
+                    {alerteStocks.length === 0 && <div style={{ textAlign:"center", padding:"1rem", color:"var(--color-text-secondary)", fontSize:12 }}>Aucune alerte.</div>}
+                  </div>
+                </div>
+
+                <div style={{ background:"var(--color-background-primary)", borderRadius:16, padding:18, border:"1px solid var(--color-border-tertiary)" }}>
+                  <h3 style={{ margin:"0 0 12px", fontSize:13.5, fontWeight:700, color:"#0284C7", display:"flex", alignItems:"center", gap:6 }}><i className="ti ti-users"/> Pointages Récents</h3>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {[...ouvriersData].reverse().slice(0,3).map((item, idx) => (
+                      <div key={idx} style={{ background:"var(--color-background-tertiary)", borderRadius:10, padding:"8px 12px", border:"1px solid var(--color-border-tertiary)", display:"flex", justifycontent:"space-between", alignItems:"center" }}>
+                        <div><div style={{ fontWeight:700, fontSize:13 }}>{item.cells.nom}</div><div style={{ fontSize:11, color:"var(--color-text-secondary)" }}>{formatDate(item.cells.date)}</div></div>
+                        <span style={{ fontSize:11, padding:"3px 8px", borderRadius:12, fontWeight:700, background: item.cells.statut === "Présent" ? "#EAF3DE" : "#FCEBEB", color: item.cells.statut === "Présent" ? "#3B6D11" : "#A32D2D" }}>{item.cells.statut}</span>
+                      </div>
+                    ))}
+                    {ouvriersData.length === 0 && <div style={{ textAlign:"center", padding:"1rem", color:"var(--color-text-secondary)", fontSize:12 }}>Aucun pointage.</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab==="taches" && (
+            <div>
+              <div style={{ background:"linear-gradient(135deg, rgba(168, 255, 0, 0.1), rgba(0, 33, 10, 0.05))", border:"1px solid var(--color-brand-accent)", borderRadius:18, padding:18, marginBottom:16 }}>
+                <h3 style={{ margin:"0 0 10px 0", fontSize:13.5, fontWeight:700, color:"var(--color-brand-primary)", display:"flex", alignItems:"center", gap:8 }}>
+                  <i className="ti ti-wand" /> Assistant de Saisie Intelligent ✨
+                </h3>
+                <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                  <input value={aiPromptInput} onChange={e=>setAiPromptInput(e.target.value)} placeholder="Ex: Koffi doit récolter la parcelle C cacao le 5 juin..." style={{ flex:1, minWidth:260, background:"#fff" }} onKeyDown={e => e.key === "Enter" && handleAIGenerateTask()}/>
+                  <button onClick={handleAIGenerateTask} disabled={aiParsing} style={{ background:"var(--color-brand-primary)", color:"#fff", border:"none", padding:"10px 20px", borderRadius:10, fontWeight:700, cursor: "pointer" }}>Générer avec l'IA</button>
+                </div>
+              </div>
+
+              {showForm && (
+                <div style={{ background:"var(--color-background-primary)", border:"1px solid var(--color-border-secondary)", borderRadius:18, padding:"1.5rem", marginBottom:"1.5rem" }}>
+                  <h2 style={{ margin:"0 0 1.25rem", fontSize:16, fontWeight:700, color:"var(--color-brand-primary)" }}>{editingTask?"Modifier l'activité":"Créer un nouveau travail"}</h2>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:16 }}>
+                    <div style={{ gridColumn:"1/-1" }}><label style={{ fontSize:12, fontWeight:700, display:"block", marginBottom:5 }}>Titre de l'activité *</label><input value={form.titre} onChange={e=>setForm(f=>({...f,titre:e.target.value}))}/></div>
+                    {[["categorie","Catégorie",CATEGORIES.map(c=>({id:c.id,label:c.label}))],["statut","Statut",STATUTS.map(s=>({id:s.id,label:s.label}))],["priorite","Priorité",PRIORITIES.map(p=>({id:p.id,label:p.label}))]].map(([field,label,opts])=>(
+                      <div key={field}><label style={{ fontSize:12, fontWeight:700, display:"block", marginBottom:5 }}>{label}</label><select value={form[field]} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))}>{opts.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select></div>
+                    ))}
+                    <div style={{ gridColumn:"1/-1" }}><label style={{ fontSize:12, fontWeight:700, display:"block", marginBottom:5 }}>Notes</label><textarea value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} rows={3}/></div>
+                  </div>
+                  <div style={{ display:"flex", gap:10, marginTop:"1.5rem", justifycontent:"flex-end" }}>
+                    <button onClick={()=>{ setShowForm(false); setEditingTask(null); }} style={{ padding:"10px 22px", borderRadius:10, border:"1px solid var(--color-border-secondary)", background:"transparent", cursor:"pointer" }}>Annuler</button>
+                    <button onClick={handleSubmit} style={{ padding:"10px 24px", borderRadius:10, border:"none", background:"var(--color-brand-primary)", color:"#fff", cursor:"pointer", fontWeight:700 }}>Valider</button>
+                  </div>
+                </div>
+              )}
+              {tasks.map(task=>{ const cat=CATEGORIES.find(c=>c.id===task.categorie); const stat=STATUTS.find(s=>s.id===task.statut); return (
+                <div key={task.id} style={{ border:"1px solid var(--color-border-tertiary)", borderRadius:16, padding:"14px 16px", marginBottom:10, background:"var(--color-background-primary)", boxShadow:"var(--shadow-sm)" , display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:44, height:44, borderRadius:12, background:cat?.color+"15", display:"flex", alignItems:"center", justifycontent:"center", flexShrink:0 }}><i className={`ti ${cat?.icon}`} style={{ color:cat?.color, fontSize:24 }}/></div>
+                  <div style={{ flex:1, minWidth:0 }}><div style={{ fontWeight:700, fontSize:15 }}>{task.titre}</div><div style={{ fontSize:12, color:"var(--color-text-secondary)" }}>{task.description}</div></div>
+                  <span style={{ fontSize:11, padding:"4px 10px", borderRadius:20, background:stat?.bg, color:stat?.color, fontWeight:700 }}>{stat?.label}</span>
+                </div>
+              ); })}
+            </div>
+          )}
+
+          {activeTab==="rappels" && (
+            <div>
+              <h2 style={{ fontSize:15, fontWeight:700, color:"var(--color-text-primary)" }}>Alertes d'échéances urgentes</h2>
+              {tasks.filter(t => { const d = getDaysUntil(t.dateFin); return d !== null && d <= 7 && t.statut !== "termine"; }).map(task => { const d=getDaysUntil(task.dateFin); return (
+                <div key={task.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 18px", borderRadius:16, border:"1px solid #BA751744", background:"#FAEEDA", marginBottom:10 }}><div style={{ fontWeight:700, color:"#BA7517" }}>{task.titre} - J-{d}</div></div>
+              )})}
+            </div>
+          )}
+
+          {activeTab==="conseils_ia" && <AgroIATab tasks={tasks} expenses={rawExpenses} ouvriers={ouvriersData} transformations={transformationData} materiel={materielData} stocks={stocksData} archives={archivesData} availableCultures={availableCultures} addToast={addToast} />}
+          {activeTab==="plantation" && <PlantationTab addToast={addToast} dbUser={dbUser} admins={admins} availableCultures={availableCultures} allPlantationData={allPlantationData} onPlantationRowsChange={handlePlantationRowsChange} loadCulturesAndData={loadCulturesAndData} />}
+          {activeTab==="depenses" && <DepensesTab addToast={addToast} tasks={tasks} dbUser={dbUser} expenses={rawExpenses} onExpensesChange={handleExpensesChange} admins={admins} setAdmins={setAdmins}/>}
+          {activeTab==="materiel" && <MaterielTab materiel={materielData} onMaterielChange={(r,a,c,v,b) => handleGenericDataChange("materiel_equipements", setMaterielData, r, a, c, v, b)} />}
+          {activeTab==="ouvriers" && <OuvriersTab ouvriers={ouvriersData} onOuvriersChange={(r,a,c,v,b) => handleGenericDataChange("presence_ouvriers", setOuvriersData, r, a, c, v, b)} />}
+          {activeTab==="transformation" && <TransformationTab availableCultures={availableCultures} transformation={transformationData} onTransformationChange={(r,a,c,v,b) => handleGenericDataChange("transformation_cultures", setTransformationData, r, a, c, v, b)} />}
+          {activeTab==="stocks" && <StocksTab stocks={stocksData} onStocksChange={(r,a,c,v,b) => handleGenericDataChange("gestion_stocks", setStocksData, r, a, c, v, b)} />}
+          {activeTab==="archive" && <ArchivesTab archives={archivesData} onArchivesChange={handleArchivesChange} addToast={addToast} />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// AUTHENTICATION SCREEN WITH PERSISTENT USER DB
+// ----------------------------------------------------------------------
+function AuthScreen({ onLogin }) {
+  const [isLogin, setIsLogin] = useState(true); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState(''); const [errorMsg, setErrorMsg] = useState(''); const [successMsg, setSuccessMsg] = useState('');
+
+  const getUsersFromStore = () => { try { const u = localStorage.getItem('tcp_registered_users'); if (u) return JSON.parse(u); const defaultUsers = [{ email: 'chef@champetres.pro', password: 'chef', name: "Chef d'exploitation" }]; localStorage.setItem('tcp_registered_users', JSON.stringify(defaultUsers)); return defaultUsers; } catch(e) { return []; } };
+
+  const handleAuthSubmit = (e) => {
+    e.preventDefault(); setErrorMsg(''); setSuccessMsg('');
+    if (!email || !password || (!isLogin && !name)) { setErrorMsg('Veuillez remplir correctement tous les champs requis.'); return; }
+    const registeredUsers = getUsersFromStore();
+    if (isLogin) {
+      const matchedUser = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      if (matchedUser) onLogin({ email: matchedUser.email, name: matchedUser.name }); else setErrorMsg('Adresse email ou mot de passe incorrect.');
+    } else {
+      if (registeredUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) { setErrorMsg('Cet email est déjà lié à un compte existant.'); return; }
+      const newUser = { email: email.toLowerCase(), password, name }; const updatedUsers = [...registeredUsers, newUser];
+      try { localStorage.setItem('tcp_registered_users', JSON.stringify(updatedUsers)); setSuccessMsg('Compte créé avec succès ! Connectez-vous maintenant.'); setIsLogin(true); setPassword(''); } catch(err) { setErrorMsg("Impossible d'enregistrer le compte."); }
+    }
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-brand-primary)', padding: '20px' }}>
+      <div style={{ background: 'var(--color-background-primary)', padding: '40px', borderRadius: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)', width: '100%', maxWidth: '420px', animation: 'fadeIn 0.5s ease-out' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ background: 'var(--color-brand-primary)', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--color-brand-accent)', fontSize: '32px', border:'1px solid var(--color-brand-accent)' }}><i className="ti ti-plant-2"></i></div>
+          <h2 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '24px', fontWeight: 700 }}>Agricom</h2>
+          <p style={{ margin: '8px 0 0 0', color: 'var(--color-text-secondary)', fontSize: '14.5px' }}>{isLogin ? 'Connectez-vous à votre espace' : 'Créez votre compte'}</p>
+        </div>
+        {errorMsg && <div style={{ background: '#FCEBEB', border: '1px solid #E24B4A', color: '#A32D2D', borderRadius: '10px', padding: '12px 14px', fontSize: '13px', marginBottom: '18px', fontWeight: 600 }}>{errorMsg}</div>}
+        {successMsg && <div style={{ background: '#EAF3DE', border: '1px solid #639922', color: '#3B6D11', borderRadius: '10px', padding: '12px 14px', fontSize: '13px', marginBottom: '18px', fontWeight: 600 }}>{successMsg}</div>}
+        <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {!isLogin && <div><label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Nom complet</label><input type="text" required value={name} onChange={e => setName(e.target.value)} style={{ width: '100%' }} placeholder="Ex: Jean Dupont"/></div>}
+          <div><label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Adresse Email</label><input type="email" required value={email} onChange={e => setEmail(e.target.value)} style={{ width: '100%' }} placeholder="agriculteur@domaine.com"/></div>
+          <div><label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Mot de passe</label><input type="password" required value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%' }} placeholder="••••••••"/></div>
+          <button type="submit" style={{ marginTop: '12px', background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)', border: '1px solid var(--color-brand-accent)', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>{isLogin ? 'Accéder au tableau de bord' : "Créer mon compte"}</button>
+        </form>
+        <div style={{ marginTop: '20px', background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '10px', border: '1px dashed var(--color-border-secondary)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>📌 Compte démo</div>
+          <div style={{ fontSize: '12.5px' }}>Email : <strong style={{ color: 'var(--color-brand-primary)' }}>chef@champetres.pro</strong><br/>Mot de passe : <strong style={{ color: 'var(--color-brand-primary)' }}>chef</strong></div>
+        </div>
+        <div style={{ marginTop: '24px', textAlign: 'center', borderTop: '1px solid var(--color-border-tertiary)', paddingTop: '20px' }}>
+          <button onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); setSuccessMsg(''); }} style={{ background: 'none', border: 'none', color: '#2C3E8C', fontSize: '14px', cursor: 'pointer', fontWeight: 500 }}>{isLogin ? "Nouveau ici ? Créer un compte" : "Déjà un compte ? Se connecter"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// APP ROOT WRAPPER
+// ----------------------------------------------------------------------
+function Root() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('tcp_auth') === 'true');
+  const [user, setUser] = useState(() => { try { return JSON.parse(localStorage.getItem('tcp_user') || 'null'); } catch(e) { return null; } });
+
+  const handleLogin = (userData) => { setIsAuthenticated(true); setUser(userData); localStorage.setItem('tcp_auth', 'true'); localStorage.setItem('tcp_user', JSON.stringify(userData)); };
+  const handleLogout = () => { setIsAuthenticated(false); setUser(null); localStorage.removeItem('tcp_auth'); localStorage.removeItem('tcp_user'); };
+
+  if (!isAuthenticated) return <AuthScreen onLogin={handleLogin} />;
+  return <DashboardChampetre user={user} onLogout={handleLogout} />;
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Root />);
+</script>
+</body>
+</html>
